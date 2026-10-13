@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <title>막차유 매칭 등록</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        :root{--pink:#ff2e63;--pink2:#e91e63;--navy:#061225;--line:rgba(255,255,255,.14);--muted:rgba(255,255,255,.68)}
+        *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        html,body{margin:0;min-height:100%;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;color:#fff}
+        body.auth-body{min-height:100vh;background:#020611;overflow-x:hidden}
+        .auth-bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:#020611}
+        .auth-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 15% 20%,rgba(255,46,99,.34),transparent 30%),radial-gradient(circle at 85% 75%,rgba(255,46,99,.24),transparent 32%),linear-gradient(180deg,rgba(2,6,17,.08),#020611 82%);z-index:3}
+        .auth-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(2,6,17,.82),rgba(2,6,17,.42),rgba(2,6,17,.86));z-index:2}
+        .auth-slide{position:absolute;inset:-3%;background-size:cover;background-position:center;opacity:0;transform:scale(1.06);animation:authFade 30s infinite ease-in-out;filter:saturate(1.08) contrast(1.04)}
+        .auth-slide:nth-child(1){background-image:url('auth_bg_1.png');animation-delay:0s}
+        .auth-slide:nth-child(2){background-image:url('auth_bg_2.png');animation-delay:6s}
+        .auth-slide:nth-child(3){background-image:url('auth_bg_3.png');animation-delay:12s}
+        .auth-slide:nth-child(4){background-image:url('auth_bg_4.png');animation-delay:18s}
+        .auth-slide:nth-child(5){background-image:url('auth_bg_5.png');animation-delay:24s}
+        @keyframes authFade{0%,100%{opacity:0;transform:scale(1.08)}5%,18%{opacity:1;transform:scale(1)}23%{opacity:0;transform:scale(1.02)}}
+        .auth-page{position:relative;z-index:5;width:100%;max-width:560px;min-height:100vh;margin:0 auto;padding:24px 18px 38px;display:flex;flex-direction:column}
+        .auth-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+        .back-link{color:#fff;text-decoration:none;width:40px;height:40px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;backdrop-filter:blur(14px)}
+        .brand-mini{display:flex;align-items:center;gap:9px;font-weight:1000;letter-spacing:.5px}
+        .brand-mini img{width:34px;height:34px;object-fit:contain;border-radius:9px}
+        .match-banner{height:180px;border-radius:0 0 30px 30px;overflow:hidden;margin:0 -18px 20px;position:relative;background:url('auth_bg_1.png') center/cover}
+        .match-banner::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(2,6,17,.14),rgba(2,6,17,.86)),linear-gradient(90deg,rgba(255,46,99,.24),transparent)}
+        .match-banner-content{position:absolute;z-index:2;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:18px}
+        .match-banner img{width:72px;height:72px;object-fit:contain;filter:drop-shadow(0 14px 24px rgba(0,0,0,.35))}
+        .match-banner h1{margin:10px 0 6px;font-size:26px;font-weight:1000;letter-spacing:-1px}
+        .point-pill{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:999px;background:rgba(255,46,99,.18);border:1px solid rgba(255,46,99,.45);font-size:12px;font-weight:1000}
+        .form-card{width:100%;border:1px solid rgba(255,46,99,.38);background:linear-gradient(180deg,rgba(8,18,40,.78),rgba(4,8,22,.84));border-radius:28px;padding:24px 22px;box-shadow:0 28px 80px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(20px);animation:popIn .45s ease}
+        @keyframes popIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+        .card-label{font-size:12px;font-weight:1000;color:var(--pink);letter-spacing:1.8px;margin-bottom:8px}
+        .card-title{font-size:25px;font-weight:1000;letter-spacing:-.8px;margin:0 0 6px}
+        .card-desc{font-size:13px;color:var(--muted);line-height:1.55;margin:0 0 22px}
+        .form-group{margin-bottom:16px}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        .form-group label{display:block;margin:0 0 7px;font-size:12px;font-weight:900;color:rgba(255,255,255,.78)}
+        input[type="text"],input[type="number"],input[type="datetime-local"],input[type="tel"]{width:100%;min-height:52px;border:1.5px solid rgba(255,255,255,.15);border-radius:15px;background:rgba(2,6,17,.55);color:#fff;padding:0 15px;font-family:inherit;font-size:14px;outline:none;transition:.2s}
+        input::placeholder{color:rgba(255,255,255,.38)}
+        input:focus{border-color:rgba(255,46,99,.85);box-shadow:0 0 0 4px rgba(255,46,99,.12);background:rgba(255,46,99,.08)}
+        .address-row{display:grid;grid-template-columns:1fr auto;gap:8px}
+        .address-search-btn,.submit-btn{border:none;font-family:inherit;font-weight:1000;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+        .address-search-btn{min-height:52px;border-radius:15px;padding:0 16px;background:rgba(255,46,99,.18);border:1px solid rgba(255,46,99,.45);color:#fff;white-space:nowrap}
+        .address-hint{margin-top:9px;color:var(--muted);font-size:12px;font-weight:700;line-height:1.5}
+        .map-preview{display:none;width:100%;height:220px;margin-top:12px;border:1px solid rgba(255,255,255,.14);border-radius:18px;overflow:hidden;background:rgba(255,255,255,.08)}
+        .chip-group{display:flex;flex-wrap:wrap;gap:8px}
+        .chip{min-height:40px;padding:0 15px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.78);cursor:pointer;font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center;transition:.2s}
+        .chip.selected{background:linear-gradient(135deg,#ff2e63,#e91e63);color:#fff;border-color:rgba(255,46,99,.9);box-shadow:0 10px 24px rgba(255,46,99,.22)}
+        .chip.is-hidden{display:none}
+        .benefit-group{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+        .benefit-item{min-height:48px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);padding:10px 12px;border-radius:15px;cursor:pointer;font-size:13px;font-weight:800;color:rgba(255,255,255,.82)}
+        .benefit-item input{width:18px;height:18px;margin:0;accent-color:var(--pink)}
+        .submit-btn{width:100%;min-height:56px;margin-top:22px;border-radius:17px;background:linear-gradient(135deg,#ff2e63,#e91e63);color:#fff;font-size:15px;box-shadow:0 14px 30px rgba(255,46,99,.35)}
+        .submit-btn:active,.address-search-btn:active,.chip:active{transform:scale(.985)}
+        .auth-footer{text-align:center;font-size:11px;font-weight:800;color:rgba(255,255,255,.38);letter-spacing:1px;margin-top:22px}
+        @media(max-width:480px){
+            .auth-page{padding:18px 14px 30px}
+            .match-banner{margin:0 -14px 18px;height:168px;border-radius:0 0 26px 26px}
+            .match-banner h1{font-size:24px}
+            .form-card{padding:22px 18px;border-radius:24px}
+            .form-row,.address-row,.benefit-group{grid-template-columns:1fr}
+            .address-search-btn{width:100%}
+            .map-preview{height:180px}
+            .card-title{font-size:23px}
+            .chip{flex:1 1 calc(33.333% - 8px);padding:0 10px}
+        }
+    </style>
+<script src="app-update.js" defer></script></head>
+<body class="auth-body">
+<div class="auth-bg"><div class="auth-slide"></div><div class="auth-slide"></div><div class="auth-slide"></div><div class="auth-slide"></div><div class="auth-slide"></div></div>
+
+<main class="auth-page">
+    <div class="auth-top">
+        <a class="back-link" href="admin.html" aria-label="관리자 페이지로 이동">‹</a>
+        <div class="brand-mini"><img src="ltu_logo.png" alt="LTU"><span>LAST TRAIN UNITED</span></div>
+        <span class="back-link" aria-hidden="true" style="visibility:hidden">‹</span>
+    </div>
+
+    <div class="match-banner">
+        <div class="match-banner-content">
+            <img src="ltu_logo.png" alt="LTU">
+            <h1>매칭 등록</h1>
+            <div class="point-pill">주소 검색 기반 매칭 등록</div>
+        </div>
+    </div>
+
+    <div class="form-card">
+        <div class="card-label">MATCH SETUP</div>
+        <h2 class="card-title">새 매칭 정보 입력</h2>
+        <p class="card-desc">모임 종류와 일정, 장소를 입력하면 참여 페이지에 표시할 매칭 정보로 저장됩니다.</p>
+
+        <div class="form-group">
+            <label>🏷️ 매칭 명칭</label>
+            <input type="text" id="stadiumName" placeholder="예: 삼산 풋살 5vs5, 부평 커피 번개, 계양산 등산">
+        </div>
+
+        <div class="form-group">
+            <label>🗂️ 큰 분류</label>
+            <div class="chip-group" id="matchCategory">
+                <div class="chip" data-key="football" onclick="selectCategory(this)">축구/풋살</div>
+                <div class="chip" data-key="sports" onclick="selectCategory(this)">운동</div>
+                <div class="chip" data-key="social" onclick="selectCategory(this)">친목</div>
+                <div class="chip" data-key="event" onclick="selectCategory(this)">행사</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>✨ 세부 타입</label>
+            <div class="chip-group" id="stadiumType">
+                <div class="chip" data-category="football" data-key="futsal" onclick="selectSingle(this, 'type')">풋살</div>
+                <div class="chip" data-category="football" data-key="soccer" onclick="selectSingle(this, 'type')">축구</div>
+                <div class="chip" data-category="sports" data-key="basketball" onclick="selectSingle(this, 'type')">농구</div>
+                <div class="chip" data-category="sports" data-key="running" onclick="selectSingle(this, 'type')">러닝</div>
+                <div class="chip" data-category="sports" data-key="hiking" onclick="selectSingle(this, 'type')">등산</div>
+                <div class="chip" data-category="social" data-key="boardgame" onclick="selectSingle(this, 'type')">보드카페</div>
+                <div class="chip" data-category="social" data-key="coffee" onclick="selectSingle(this, 'type')">커피</div>
+                <div class="chip" data-category="social" data-key="meal" onclick="selectSingle(this, 'type')">식사</div>
+                <div class="chip" data-category="event" data-key="club_event" onclick="selectSingle(this, 'type')">클럽행사</div>
+                <div class="chip" data-category="event" data-key="etc" onclick="selectSingle(this, 'type')">기타</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>🏠 매칭 환경</label>
+            <div class="chip-group" id="stadiumEnvironment">
+                <div class="chip" onclick="selectSingle(this, 'env')">실내</div>
+                <div class="chip" onclick="selectSingle(this, 'env')">실외</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>👥 인원 / 규모</label>
+            <input type="text" id="capacityText" placeholder="예: 5vs5, 최대 12명, 2~6명, 인원 제한 없음">
+        </div>
+
+        <div class="form-group">
+            <label>📍 주소</label>
+            <div class="address-row">
+                <input type="text" id="address" placeholder="주소 검색 버튼으로 매칭 장소를 선택하세요">
+                <button type="button" class="address-search-btn" onclick="openAddressSearch()">주소 검색</button>
+            </div>
+            <div class="address-hint" id="addressHint">주소를 검색하면 지도 위치가 미리 표시되고, 등록 시 좌표가 함께 저장됩니다.</div>
+            <div class="map-preview" id="mapPreview"></div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>📅 매칭 일정</label>
+                <input type="datetime-local" id="matchDate">
+            </div>
+
+            <div class="form-group">
+                <label>💰 비용 (전체 금액)</label>
+                <input type="number" id="price" placeholder="숫자만 입력">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>🙋 비회원 1인 참가비 (선택 · 미입력 시 10,000원)</label>
+            <input type="number" id="guestFee" placeholder="예: 10000">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>🎬 오늘의 감독 / PD 이름</label>
+                <input type="text" id="adminName" placeholder="예: 홍길동">
+            </div>
+
+            <div class="form-group">
+                <label>📞 오늘의 감독 / PD 연락처</label>
+                <input type="tel" id="adminPhone" placeholder="예: 010-1234-5678">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>✨ 복리 후생 (선택)</label>
+            <div class="benefit-group" id="benefits">
+                <label class="benefit-item"><input type="checkbox" value="주차가능"> 주차가능</label>
+                <label class="benefit-item"><input type="checkbox" value="정수기"> 정수기</label>
+                <label class="benefit-item"><input type="checkbox" value="장비대여"> 장비대여</label>
+                <label class="benefit-item"><input type="checkbox" value="냉난방기"> 냉난방기</label>
+                <label class="benefit-item"><input type="checkbox" value="조끼지원"> 조끼(지원)</label>
+                <label class="benefit-item"><input type="checkbox" value="음료제공"> 음료(물)</label>
+            </div>
+        </div>
+
+        <button class="submit-btn" onclick="saveStadium()">매칭 등록하기 🚀</button>
+    </div>
+    <div class="auth-footer">LTU MATCH ADMIN</div>
+</main>
+
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=6cf16d373b9283167a26f749fb4fb325&libraries=services"></script>
+<script type="module">
+   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAo6x8MqKqEJVstH9ZjDa6tyrOPHEo6CfM",
+        authDomain: "makcha-united-final.firebaseapp.com",
+        databaseURL: "https://makcha-united-final-default-rtdb.firebaseio.com",
+        projectId: "makcha-united-final",
+        storageBucket: "makcha-united-final.firebasestorage.app",
+        messagingSenderId: "631914143856",
+        appId: "1:631914143856:web:5d96e048da9a19a90954b5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    let selectedLocation = null;
+
+    window.selectCategory = (el) => {
+        document.querySelectorAll('#matchCategory .chip').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+
+        const categoryKey = el.dataset.key;
+        document.querySelectorAll('#stadiumType .chip').forEach(chip => {
+            const matched = chip.dataset.category === categoryKey;
+            chip.classList.toggle('is-hidden', !matched);
+            if (!matched) chip.classList.remove('selected');
+        });
+    };
+
+    window.selectSingle = (el, group) => {
+        el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+    };
+
+    window.selectMulti = (el) => {
+        el.classList.toggle('selected');
+    };
+
+    function setAddressHint(message) {
+        document.getElementById('addressHint').innerText = message;
+    }
+
+    function escapeHTML(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function showMapPreview(lat, lng, title) {
+        if (!window.kakao || !kakao.maps) {
+            setAddressHint('카카오 지도를 불러오지 못했습니다. 도메인 등록을 확인해주세요.');
+            return;
+        }
+
+        const preview = document.getElementById('mapPreview');
+        preview.style.display = 'block';
+
+        const coords = new kakao.maps.LatLng(lat, lng);
+        const map = new kakao.maps.Map(preview, {
+            center: coords,
+            level: 4
+        });
+        const marker = new kakao.maps.Marker({
+            map,
+            position: coords,
+            title
+        });
+        const infoWindow = new kakao.maps.InfoWindow({
+            content: `<div style="padding:6px 10px;font-size:12px;font-weight:700;white-space:nowrap;">${escapeHTML(title)}</div>`
+        });
+
+        infoWindow.open(map, marker);
+        setTimeout(() => map.relayout(), 0);
+    }
+
+    function findAddressCoords(address, title) {
+        if (!window.kakao || !kakao.maps || !kakao.maps.services) {
+            setAddressHint('카카오 지도 서비스를 불러오지 못했습니다. JavaScript SDK 도메인을 확인해주세요.');
+            return;
+        }
+
+        const geocoder = new kakao.maps.services.Geocoder();
+        geocoder.addressSearch(address, (result, status) => {
+            if (status !== kakao.maps.services.Status.OK || !result.length) {
+                selectedLocation = null;
+                setAddressHint('주소는 선택됐지만 지도 좌표를 찾지 못했습니다. 더 정확한 주소로 다시 검색해주세요.');
+                document.getElementById('mapPreview').style.display = 'none';
+                return;
+            }
+
+            selectedLocation = {
+                lat: Number(result[0].y),
+                lng: Number(result[0].x)
+            };
+            setAddressHint('지도 위치 확인 완료. 이 주소와 좌표로 매칭 장소가 등록됩니다.');
+            showMapPreview(selectedLocation.lat, selectedLocation.lng, title || '매칭 장소');
+        });
+    }
+
+    window.openAddressSearch = () => {
+        if (!window.daum || !daum.Postcode) {
+            alert('주소 검색 서비스를 불러오지 못했습니다. 인터넷 연결을 확인해주세요.');
+            return;
+        }
+
+        new daum.Postcode({
+            oncomplete: (data) => {
+                const address = data.roadAddress || data.jibunAddress || data.address;
+                document.getElementById('address').value = address;
+                selectedLocation = null;
+                setAddressHint('주소 좌표를 확인하는 중입니다...');
+                findAddressCoords(address, document.getElementById('stadiumName').value.trim() || data.buildingName || '매칭 장소');
+            }
+        }).open();
+    };
+
+    window.saveStadium = async () => {
+        const name = document.getElementById('stadiumName').value;
+        const categoryChip = document.querySelector('#matchCategory .chip.selected');
+        const typeChip = document.querySelector('#stadiumType .chip.selected');
+        const category = categoryChip?.innerText;
+        const categoryKey = categoryChip?.dataset.key || "";
+        const activityType = typeChip?.innerText;
+        const activityTypeKey = typeChip?.dataset.key || "";
+        const type = activityType;
+        const env = document.querySelector('#stadiumEnvironment .chip.selected')?.innerText;
+        const capacityText = document.getElementById('capacityText').value.trim();
+        const sizes = capacityText ? [capacityText] : [];
+        const address = document.getElementById('address').value;
+        const date = document.getElementById('matchDate').value;
+        const adminName = document.getElementById('adminName').value.trim();
+        const adminPhone = document.getElementById('adminPhone').value;
+        const price = document.getElementById('price').value;
+        const guestFee = document.getElementById('guestFee').value;
+        const benefits = Array.from(document.querySelectorAll('#benefits input:checked')).map(c => c.value);
+
+        if(!name || !category || !activityType || !env || !capacityText || !address || !date || !adminName || !adminPhone || !price) {
+            alert("필수 항목을 모두 입력해주세요!");
+            return;
+        }
+
+        const stadiumRef = ref(db, 'soccer_club/stadiums');
+        const newStadiumRef = push(stadiumRef);
+        
+        await set(newStadiumRef, {
+            name,
+            category,
+            categoryKey,
+            activityType,
+            activityTypeKey,
+            type,
+            env,
+            capacityText,
+            sizes,
+            address,
+            date,
+            adminName,
+            adminPhone,
+            price: Number(price),
+            guestFee: Number(guestFee) || 10000,
+            benefits,
+            lat: selectedLocation?.lat || null,
+            lng: selectedLocation?.lng || null,
+            createdAt: new Date().toISOString()
+        });
+
+        alert("매칭이 성공적으로 등록되었습니다!");
+        location.reload();
+    };
+
+    document.querySelector('#matchCategory .chip')?.click();
+</script>
+</body>
+</html>

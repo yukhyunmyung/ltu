@@ -1,0 +1,413 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <title>梨뚮┛吏 ?쇳꽣 - 留됱감???쉨</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        :root { --primary: #e91e63; --bg: #f4f7f9; --dark: #1e293b; --gold: #f59e0b; }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); font-family: 'Pretendard', sans-serif; margin: 0; padding: 20px; color: var(--dark); padding-bottom: 50px; }
+        .container { max-width: 500px; margin: 0 auto; }
+        
+        /* ?곷떒 ?ㅻ퉬 */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .back-btn {
+            background: white;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 13px;
+            text-decoration: none;
+        }
+        .shop-link {
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 13px;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+        }
+
+        .header { text-align: center; padding: 10px 0 25px; }
+        .header h1 { font-weight: 900; color: var(--primary); margin: 0; font-size: 28px; letter-spacing: -1px; }
+        .header p { color: #64748b; font-size: 14px; margin: 8px 0 0; }
+
+        /* ?ъ씤???곹깭 移대뱶 */
+        .status-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            padding: 25px 22px;
+            border-radius: 22px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+        .status-card::before {
+            content: '?뭿';
+            position: absolute;
+            right: -10px;
+            top: -20px;
+            font-size: 120px;
+            opacity: 0.08;
+        }
+        .point-label {
+            font-size: 12px;
+            opacity: 0.7;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .point-display {
+            font-size: 42px;
+            font-weight: 900;
+            color: var(--gold);
+            line-height: 1;
+            margin-top: 5px;
+            letter-spacing: -1px;
+        }
+        .point-display::after {
+            content: ' P';
+            font-size: 22px;
+            opacity: 0.7;
+        }
+        .point-info {
+            font-size: 11px;
+            opacity: 0.6;
+            margin-top: 10px;
+        }
+
+        /* 寃뚯엫 移대뱶 */
+        .game-card {
+            background: white;
+            border-radius: 22px;
+            padding: 22px;
+            margin-bottom: 18px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .game-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+        
+        .game-emoji {
+            font-size: 52px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .game-card h3 {
+            margin: 0 0 8px;
+            font-size: 20px;
+            font-weight: 900;
+            text-align: center;
+        }
+        .game-desc {
+            font-size: 13px;
+            color: #64748b;
+            text-align: center;
+            margin: 0 0 18px;
+            line-height: 1.5;
+        }
+        .game-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+        .info-box {
+            background: #f8fafc;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+        .info-box .label { color: #94a3b8; font-weight: 600; display: block; margin-bottom: 3px; }
+        .info-box .val { color: var(--dark); font-weight: 800; font-size: 13px; }
+        .info-box .val.cost { color: #ef4444; }
+        .info-box .val.reward { color: #10b981; }
+
+        .play-btn {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 14px;
+            font-weight: 800;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 12px rgba(233, 30, 99, 0.25);
+        }
+        .play-btn:hover:not(:disabled) { transform: translateY(-1px); }
+        .play-btn:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; }
+
+        .play-btn.slot { background: linear-gradient(135deg, #8b5cf6, #ec4899); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }
+
+        /* ??뙚 諭껋? */
+        .jackpot-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 20px;
+            margin-bottom: 8px;
+        }
+
+        /* ?덈궡 諛뺤뒪 */
+        .notice {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 12px 15px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: #92400e;
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+        /* ?벑 ?묒? ?붾㈃ (?꾩씠??SE ?? */
+        @media (max-width: 380px) {
+            body { padding: 12px; }
+            .header h1 { font-size: 24px; }
+            .point-display { font-size: 32px; }
+            .game-card { padding: 18px 16px; }
+            .game-emoji { font-size: 42px; }
+            .game-card h3 { font-size: 17px; }
+            .game-info-grid { gap: 6px; }
+            .info-box { padding: 8px 10px; font-size: 10px; }
+            .info-box .val { font-size: 12px; }
+            .play-btn { font-size: 14px; padding: 13px; }
+            .top-nav { margin-bottom: 14px; }
+            .back-btn, .shop-link { font-size: 11px; padding: 6px 10px; }
+        }
+    
+        /* ============================================
+           ?벑 ?섎떒 ??컮 (紐⑤뱺 ?섏씠吏 怨듯넻)
+           ============================================ */
+        body { padding-bottom: 80px !important; }
+        .tabbar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: white;
+            border-top: 0.5px solid #e2e8f0;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            padding: 8px 4px calc(8px + env(safe-area-inset-bottom, 0px));
+            z-index: 999;
+        }
+        .tabbar-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 3px; padding: 6px 2px; text-decoration: none; cursor: pointer;
+            color: #94a3b8; transition: 0.2s; border: none; background: transparent;
+            font-family: inherit;
+        }
+        .tabbar-item.active { color: #ec4899; }
+        .tabbar-icon { 
+            font-size: 22px; 
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 24px;
+        }
+        .tabbar-item.active .tabbar-icon {
+            transform: translateY(-2px);
+            transition: transform 0.2s;
+        }
+        .tabbar-label { font-size: 10px; font-weight: 700; }
+        .tabbar-item.active .tabbar-label { font-weight: 900; }
+        @media (max-width: 380px) {
+            .tabbar { padding: 6px 2px calc(6px + env(safe-area-inset-bottom, 0px)); }
+            .tabbar-icon { font-size: 20px; height: 22px; }
+            .tabbar-label { font-size: 9px; }
+        }
+    </style>
+<script src="app-update.js" defer></script><script type="module" src="chat-launcher.js"></script></head>
+<body>
+
+<div class="container">
+    <!-- ?곷떒 ?ㅻ퉬 -->
+    <div class="top-nav">
+        <a href="mypage.html" class="back-btn">??留덉씠?섏씠吏</a>
+        <a href="shop.html" class="shop-link">?럞 荑좏룿 ?곸젏</a>
+    </div>
+
+    <div class="header">
+        <h1>?렜 梨뚮┛吏 ?쇳꽣</h1>
+        <p>?ъ씤?몃줈 ?꾩쟾?섍퀬 ????蹂댁긽???몃젮蹂댁꽭??</p>
+    </div>
+
+    <!-- ?ъ씤??移대뱶 -->
+    <div class="status-card">
+        <div class="point-label">?뭿 蹂댁쑀 ?ъ씤??/div>
+        <div class="point-display" id="myPoints">0</div>
+        <div class="point-info" id="pointInfo">留ㅼ＜ ?붿슂??1,000P ?먮룞 異⑹쟾 쨌 留ㅼ씪 異쒖꽍 ??+50P</div>
+    </div>
+
+    <!-- ?밸?李④린 寃뚯엫 移대뱶 -->
+    <div class="game-card">
+        <div class="game-emoji">?쏜윥?/div>
+        <h3>?밸?李④린 ??/h3>
+        <p class="game-desc">5?곗냽 怨⑥쓣 ?ｌ쑝硫???뙚!<br>怨⑦궎?쇨? ?먯젏 ?묐삊?댁쭛?덈떎 ?쭬</p>
+        <div class="game-info-grid">
+            <div class="info-box">
+                <span class="label">?뮥 ?낆옣猷?/span>
+                <span class="val cost">200P</span>
+            </div>
+            <div class="info-box">
+                <span class="label">?룇 ??뙚 蹂댁긽</span>
+                <span class="val reward">2,000P</span>
+            </div>
+            <div class="info-box">
+                <span class="label">3怨?蹂대꼫??/span>
+                <span class="val">+100P</span>
+            </div>
+            <div class="info-box">
+                <span class="label">4怨?蹂대꼫??/span>
+                <span class="val">+300P</span>
+            </div>
+        </div>
+        <button class="play-btn" id="btnPenalty" onclick="playGame('penalty', 200)">???꾩쟾?섍린 (200P)</button>
+    </div>
+
+    <!-- ?щ’癒몄떊 寃뚯엫 移대뱶 -->
+    <div class="game-card">
+        <span class="jackpot-badge">?렟 留ㅼ씪 ?꾩쟾!</span>
+        <div class="game-emoji">?렟?뭿</div>
+        <h3>留됱감???щ’癒몄떊</h3>
+        <p class="game-desc">3媛??щ낵???쇱튂?섎㈃ ?ъ씤????컻!<br>?ㅼ씠????뙚? 5,000P! ?뭿?뭿?뭿</p>
+        <div class="game-info-grid">
+            <div class="info-box">
+                <span class="label">?뮥 ?낆옣猷?/span>
+                <span class="val cost">100P</span>
+            </div>
+            <div class="info-box">
+                <span class="label">?뭿 ?ㅼ씠????뙚</span>
+                <span class="val reward">5,000P</span>
+            </div>
+            <div class="info-box">
+                <span class="label">?룇 ?몃줈??/span>
+                <span class="val">+1,000P</span>
+            </div>
+            <div class="info-box">
+                <span class="label">??異뺢뎄怨?/span>
+                <span class="val">+50P</span>
+            </div>
+        </div>
+        <button class="play-btn slot" id="btnSlot" onclick="playGame('slot', 100)">?렟 ?꾩쟾?섍린 (100P)</button>
+    </div>
+
+    <div class="notice">
+        ?뮕 <b>?ъ씤?멸? 遺議깊빐??嫄깆젙 留덉꽭??</b><br>
+        留ㅼ씪 異쒖꽍 泥댄겕濡?+50P, 留ㅼ＜ ?붿슂???먮룞 異⑹쟾 1,000P, 留ㅼ묶 李몄뿬 ??+100P瑜?諛쏆쓣 ???덉뼱??
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAo6x8MqKqEJVstH9ZjDa6tyrOPHEo6CfM",
+        authDomain: "makcha-united-final.firebaseapp.com",
+        databaseURL: "https://makcha-united-final-default-rtdb.firebaseio.com",
+        projectId: "makcha-united-final",
+        storageBucket: "makcha-united-final.firebasestorage.app",
+        messagingSenderId: "631914143856",
+        appId: "1:631914143856:web:5d96e048da9a19a90954b5"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const userKey = localStorage.getItem('userKey');
+    if(!userKey) {
+        alert("濡쒓렇?몄씠 ?꾩슂?⑸땲??");
+        location.href = 'login.html';
+    }
+
+    let myPoints = 0;
+
+    // ?ㅼ떆媛??ъ씤???숆린??
+    onValue(ref(db, `soccer_club/members/${userKey}`), (snap) => {
+        if(!snap.exists()) return;
+        const data = snap.val();
+        myPoints = data.points || 0;
+        document.getElementById('myPoints').innerText = myPoints.toLocaleString();
+        updateButtonStatus();
+    });
+
+    function updateButtonStatus() {
+        const btnPenalty = document.getElementById('btnPenalty');
+        const btnSlot = document.getElementById('btnSlot');
+
+        // ?밸?李④린 (200P)
+        if (myPoints < 200) {
+            btnPenalty.disabled = true;
+            btnPenalty.innerText = "?ъ씤??遺議?(200P ?꾩슂)";
+        } else {
+            btnPenalty.disabled = false;
+            btnPenalty.innerText = "???꾩쟾?섍린 (200P)";
+        }
+
+        // ?щ’癒몄떊 (100P)
+        if (myPoints < 100) {
+            btnSlot.disabled = true;
+            btnSlot.innerText = "?ъ씤??遺議?(100P ?꾩슂)";
+        } else {
+            btnSlot.disabled = false;
+            btnSlot.innerText = "?렟 ?꾩쟾?섍린 (100P)";
+        }
+    }
+
+    // 寃뚯엫 ?대룞
+    window.playGame = (gameType, cost) => {
+        if (myPoints < cost) {
+            alert(`?ъ씤?멸? 遺議깊빀?덈떎.\n?꾩옱: ${myPoints.toLocaleString()}P / ?꾩슂: ${cost}P`);
+            return;
+        }
+        if (gameType === 'penalty') {
+            location.href = 'game_penalty.html';
+        } else if (gameType === 'slot') {
+            location.href = 'game_slot.html';
+        }
+    };
+</script>
+<nav class="tabbar">
+    <a href="mypage.html" class="tabbar-item">
+        <div class="tabbar-icon">?룧</div>
+        <div class="tabbar-label">??/div>
+    </a>
+    <a href="members.html" class="tabbar-item">
+        <div class="tabbar-icon">?뫁</div>
+        <div class="tabbar-label">?뚯썝</div>
+    </a>
+    <a href="game_main.html" class="tabbar-item active">
+        <div class="tabbar-icon">?렜</div>
+        <div class="tabbar-label">寃뚯엫</div>
+    </a>
+    <a href="shop.html" class="tabbar-item">
+        <div class="tabbar-icon">?럞</div>
+        <div class="tabbar-label">?곸젏</div>
+    </a>
+    <a href="profile.html" class="tabbar-item">
+        <div class="tabbar-icon">👤</div>
+        <div class="tabbar-label">프로필</div>
+    </a>
+</nav>
+</body>
+</html>
+

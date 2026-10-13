@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <title>회원 현황 - 막차유 🚂</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="member-count.js"></script>
+    <style>
+        :root { --primary: #ff2e63; --blue: #007aff; --bg: #f4f7fa; --dark: #252a34; --gray: #8e8e93; --shadow: 0 10px 25px rgba(0,0,0,0.08); }
+        body { font-family: 'Pretendard', sans-serif; background: var(--bg); margin: 0; color: var(--dark); }
+        
+        header {
+            background: white; padding: 12px 20px; height: 56px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top:0; z-index:100;
+        }
+        .nav-link { font-size: 13px; font-weight: 700; color: var(--gray); text-decoration: none; border: 1px solid #eee; padding: 5px 10px; border-radius: 8px; }
+        .header-title { font-weight: 900; color: var(--primary); font-size: 16px; flex: 1; text-align: center; }
+        .user-name { font-size: 13px; font-weight: 700; color: var(--dark); text-align: right; min-width: 60px; }
+
+        .container { max-width: 1300px; margin: 0 auto; padding: 15px; }
+
+        /* 가이드 섹션: 입체감 있는 개별 박스로 분리 */
+        .guide-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .guide-item { 
+            background: white; border-radius: 20px; padding: 20px; 
+            box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.02);
+        }
+        .guide-item h5 { margin: 0 0 12px 0; font-size: 15px; color: var(--primary); font-weight: 800; display: flex; align-items: center; }
+        .guide-item h5::before { content: ''; width: 4px; height: 14px; background: var(--primary); margin-right: 8px; border-radius: 2px; }
+        .guide-text { font-size: 12px; color: #666; line-height: 1.7; }
+        .guide-text b { color: var(--dark); font-weight: 700; }
+
+        .chart-section { background: white; padding: 20px; border-radius: 20px; margin-bottom: 25px; box-shadow: var(--shadow); }
+        /* 🔽 접는 섹션 (등급 산정 기준 · 랭킹 · 최근 경기 랭킹 — 기본 접힘) */
+        .fold-sec { background: white; border-radius: 20px; margin-bottom: 15px; box-shadow: var(--shadow); }
+        .fold-sec > summary { list-style: none; cursor: pointer; padding: 17px 20px; font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 6px; -webkit-tap-highlight-color: transparent; }
+        .fold-sec > summary::-webkit-details-marker { display: none; }
+        .fold-sub { font-size: 12px; color: #94a3b8; font-weight: 700; }
+        .fold-caret { margin-left: auto; width: 18px; height: 18px; flex: 0 0 18px; color: #94a3b8; transition: transform .2s; }
+        /* 🎨 섹션 아이콘: 하단 탭바와 같은 선 아이콘 스타일 (굵기 1.9 · 선택 탭 핑크) */
+        .sec-title { display: flex; align-items: center; gap: 7px; }
+        .sec-ico { width: 22px; height: 22px; flex: 0 0 22px; color: #ec4899; }
+        .fold-sec[open] .fold-caret { transform: rotate(180deg); }
+        .fold-body { padding: 0 20px 20px; }
+
+        /* 🏅 부문별 랭킹 */
+        .rank-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .rank-col { background: #f8fafc; border: 1px solid #eef2f7; border-radius: 14px; padding: 12px 14px; }
+        .rank-head { font-size: 13px; font-weight: 900; color: #0f172a; margin-bottom: 8px; }
+        .rank-row { display: flex; align-items: center; gap: 7px; padding: 6px 0; font-size: 12px; }
+        .rank-row + .rank-row { border-top: 1px dashed #edf1f5; }
+        .rank-place { font-size: 11px; font-weight: 900; width: 28px; text-align: center; flex: 0 0 auto; color: #64748b; }
+        .rank-place-1 { color: #f5b800; }
+        .rank-place-2 { color: #94a3b8; }
+        .rank-place-3 { color: #cd7f32; }
+        .rank-name { font-weight: 800; color: #0f172a; }
+        .rank-age { color: #94a3b8; font-weight: 700; font-size: 11px; }
+        .rank-count { margin-left: auto; font-weight: 900; color: var(--primary); white-space: nowrap; }
+        .rank-empty { font-size: 11px; color: #cbd5e1; font-weight: 700; padding: 8px 0; }
+        @media (max-width: 520px) { .rank-grid { grid-template-columns: 1fr; gap: 10px; } }
+        
+        /* ============================================
+           🔍 검색창
+           ============================================ */
+        .search-bar {
+            background: white;
+            border-radius: 16px;
+            padding: 12px 14px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1.5px solid transparent;
+            transition: 0.2s;
+        }
+        .search-bar.focused { border-color: var(--primary); }
+        .search-icon { font-size: 18px; flex-shrink: 0; }
+        .search-input {
+            flex: 1; border: none; outline: none;
+            font-size: 14px; font-family: inherit; color: var(--dark);
+            background: transparent;
+        }
+        .search-input::placeholder { color: #cbd5e1; }
+        .search-result-badge {
+            background: #fef3c7; color: #92400e;
+            padding: 2px 8px; border-radius: 8px;
+            font-size: 11px; font-weight: 800;
+            flex-shrink: 0;
+        }
+        .search-clear-btn {
+            background: #f1f5f9; color: #64748b;
+            border: none; padding: 4px 10px; border-radius: 8px;
+            font-size: 14px; font-weight: 800; cursor: pointer;
+            font-family: inherit;
+            display: none;
+        }
+        .search-clear-btn.show { display: block; }
+        .search-clear-btn:hover { background: #e2e8f0; }
+        .no-result {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+            background: white;
+            border-radius: 16px;
+            font-size: 14px;
+        }
+        
+        /* 카드 4열 배치 */
+        .member-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+        .member-card { 
+            background: white; border-radius: 8px; padding: 16px;
+            box-shadow: var(--shadow); display: flex; flex-direction: column; 
+            border: 1px solid rgba(0,0,0,0.03); transition: transform 0.2s;
+        }
+        .member-card:hover { transform: translateY(-5px); }
+        
+        /* ✨ 카드 헤더: 사진(좌) + 차트(우) 같은 라인 */
+        .m-header {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .m-profile {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            width: 80px;
+        }
+        .m-img {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #f8f9fa;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: transform .15s ease;
+        }
+        .m-img:active { transform: scale(0.94); }
+
+        /* 📷 프로필 사진 확대 모달 */
+        .photo-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(0,0,0,0.82);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            animation: pmFade .2s ease;
+        }
+        .photo-modal.show { display: flex; }
+        @keyframes pmFade { from { opacity: 0; } to { opacity: 1; } }
+        .photo-modal-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            animation: pmPop .25s cubic-bezier(.2,.9,.3,1.2);
+        }
+        @keyframes pmPop { from { transform: scale(.85); opacity: .4; } to { transform: scale(1); opacity: 1; } }
+        .photo-modal-img {
+            max-width: 86vw;
+            max-height: 72vh;
+            border-radius: 18px;
+            object-fit: contain;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            background: #fff;
+        }
+        .photo-modal-name {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 800;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        }
+        .photo-modal-close {
+            position: absolute;
+            top: 18px; right: 20px;
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            font-size: 24px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        .photo-modal-close:active { background: rgba(255,255,255,0.3); }
+        .tier-badge {
+            display: inline-block;
+            padding: 3px 7px;
+            border-radius: 7px;
+            font-size: 9px;
+            font-weight: 800;
+            color: white;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            white-space: nowrap;
+        }
+        .m-name { font-size: 14px; font-weight: 800; line-height: 1.2; text-align: center; }
+        .gender-mark { font-weight: 900; margin-left: 2px; }
+        .gm-male { color: #3b82f6; }
+        .gm-female { color: #ff2e63; }
+        .m-sub { font-size: 11px; color: var(--gray); font-weight: 600; }
+        
+        /* 우측: 레이더 차트 */
+        .m-chart-wrap {
+            flex: 1;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+        }
+        
+        /* ✨ 스탯 한 줄 (4분할) */
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            background: #f8f9fa;
+            border: 1px solid #f0f0f0;
+            border-radius: 10px;
+            padding: 8px 4px;
+            margin-bottom: 10px;
+        }
+        .stat-cell {
+            flex: 1;
+            text-align: center;
+            border-right: 1px solid #e2e8f0;
+        }
+        .stat-cell:last-child { border-right: none; }
+        .stat-cell .label {
+            font-size: 9px;
+            color: #888;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .stat-cell .value {
+            font-size: 13px;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .review-box { border-top: 1px dashed #eee; padding-top: 10px; margin-top: auto; min-height: 50px; }
+        .review-item { font-size: 10px; padding: 7px; border-radius: 8px; margin-bottom: 5px; line-height: 1.4; }
+        .review-item.praise { color: #555; background: #fff4f6; border-left: 3px solid var(--primary); }
+        .review-item.warn { color: #92400e; background: #fef3c7; border-left: 3px solid #f59e0b; }
+
+        /* ✨ v2 뱃지 누적 행 (도움/수비/매너) */
+        .mbadge-row { display:flex; align-items:flex-start; gap:6px; padding:3px 8px; }
+        .mbadge-label { font-size:11px; font-weight:800; color:#555; min-width:48px; flex:0 0 auto; padding-top:2px; }
+        .mbadge-stack { display:flex; flex-wrap:wrap; gap:3px; align-items:center; }
+        .stack-badge { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:linear-gradient(145deg,#f1f5f9,#e2e8f0); box-shadow:0 1px 3px rgba(0,0,0,.12); font-size:11px; }
+        .stack-more { display:inline-flex; align-items:center; font-size:10px; font-weight:800; color:#94a3b8; padding:0 3px; }
+        .badge-empty { font-size:10px; color:#cbd5e1; font-weight:700; }
+        /* ✨ 최근 경기 평가 뱃지 */
+        .rme-label { font-size:9px; font-weight:800; color:#999; margin-bottom:5px; }
+        .rme-badges { display:flex; flex-wrap:wrap; gap:4px; }
+        .rme-badge { display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:800; color:#fff; border-radius:999px; padding:2px 8px; }
+        .rme-badge.badge-assist { background:#38bdf8; }
+        .rme-badge.badge-defense { background:#22c55e; }
+        .rme-badge.badge-manner { background:#ec4899; }
+        .rme-badge.badge-mvp { background:linear-gradient(145deg,#f5b800,#f59e0b); }
+        
+        .tier-유망주 { background: #8e8e93; } .tier-벤치멤버 { background: #4cd964; } .tier-주전멤버 { background: #007aff; }
+        .tier-에이스 { background: #5856d6; } .tier-레전드 { background: #ff9500; } .tier-발롱도르 { background: linear-gradient(45deg, #ffcc00, #ff9500); }
+
+        /* ✨ 운영진 직급 표시 (참석 등급과 별개) */
+        .role-badge {
+            display: inline-block;
+            margin-top: 2px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 9px;
+            font-weight: 900;
+            color: #fff;
+            white-space: nowrap;
+            animation: roleGlow 1.7s ease-in-out infinite;
+        }
+        .role-owner   { background: linear-gradient(135deg,#f7b733,#fc4a1a); }
+        .role-coach   { background: linear-gradient(135deg,#2196f3,#0d47a1); }
+        .role-manager { background: linear-gradient(135deg,#ff2e63,#e91e63); }
+        .member-card.rc-owner   { border: 2px solid #f7b733 !important; box-shadow: 0 0 0 3px rgba(247,183,51,.20), 0 10px 26px rgba(247,183,51,.18) !important; }
+        .member-card.rc-coach   { border: 2px solid #2196f3 !important; box-shadow: 0 0 0 3px rgba(33,150,243,.18), 0 10px 26px rgba(33,150,243,.18) !important; }
+        .member-card.rc-manager { border: 2px solid #ff2e63 !important; box-shadow: 0 0 0 3px rgba(255,46,99,.18), 0 10px 26px rgba(255,46,99,.18) !important; }
+        @keyframes roleGlow {
+            0%,100% { box-shadow: 0 0 3px rgba(255,255,255,.35), 0 2px 6px rgba(0,0,0,.15); }
+            50%     { box-shadow: 0 0 12px rgba(255,215,0,.85), 0 2px 8px rgba(0,0,0,.2); }
+        }
+
+        /* 반응형 */
+        @media (max-width: 1100px) { .member-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 800px) { .member-grid { grid-template-columns: repeat(2, 1fr); } .guide-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 500px) { 
+            .member-grid { grid-template-columns: 1fr; }
+            .m-header { gap: 16px; }
+            .m-profile { width: 90px; }
+        }
+    
+        /* ============================================
+           📱 하단 탭바 (모든 페이지 공통)
+           ============================================ */
+        body { padding-bottom: 80px !important; }
+        .tabbar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: white;
+            border-top: 0.5px solid #e2e8f0;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            padding: 8px 4px calc(8px + env(safe-area-inset-bottom, 0px));
+            z-index: 999;
+        }
+        .tabbar-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 3px; padding: 6px 2px; text-decoration: none; cursor: pointer;
+            color: #94a3b8; transition: 0.2s; border: none; background: transparent;
+            font-family: inherit;
+        }
+        .tabbar-item.active { color: #ec4899; }
+        .tabbar-icon { 
+            font-size: 22px; 
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 24px;
+            position: relative;
+        }
+        .chat-unread-badge {
+            display: none;
+            position: absolute;
+            top: -8px;
+            right: -12px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            background: #ff2e63;
+            color: white;
+            border: 2px solid white;
+            font-size: 10px;
+            font-weight: 1000;
+            line-height: 14px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(255,46,99,.28);
+        }
+        .tabbar-item.active .tabbar-icon {
+            transform: translateY(-2px);
+            transition: transform 0.2s;
+        }
+        .tabbar-label { font-size: 10px; font-weight: 700; }
+        .tabbar-item.active .tabbar-label { font-weight: 900; }
+        @media (max-width: 380px) {
+            .tabbar { padding: 6px 2px calc(6px + env(safe-area-inset-bottom, 0px)); }
+            .tabbar-icon { font-size: 20px; height: 22px; }
+            .tabbar-label { font-size: 9px; }
+        }
+        /* ✨ 브랜드 로고 */
+        .brand-title { display:flex; align-items:center; gap:10px; color: var(--primary); }
+        .brand-title img { height: 30px; width: auto; max-width: 130px; object-fit: contain; display:block; }
+        @media (max-width:480px){ .brand-title img { height: 26px; } }
+        .brand-text { line-height: 1; display:flex; align-items:flex-end; gap:0; }
+        .brand-text .brand-main { font-size: 16px; font-weight: 900; letter-spacing: -0.5px; }
+        .brand-text .brand-sub { font-size: 11px; font-weight: 700; opacity: 0.88; margin-left: 1px; transform: translateY(-1px); }
+
+        /* ✨ 회원 현황 배너 */
+        .ltu-member-banner {
+            position: relative;
+            width: 100%;
+            height: 148px;
+            border-radius: 22px;
+            overflow: hidden;
+            margin: 0 0 16px;
+            background: #071225;
+            box-shadow: 0 14px 34px rgba(15,23,42,.22);
+            border: 1px solid rgba(255,46,99,.18);
+        }
+        .ltu-member-slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transform: scale(1.055);
+            animation: ltuMemberFadeZoom 25s infinite ease-in-out;
+            will-change: opacity, transform;
+        }
+        .ltu-member-slide:nth-child(1) { animation-delay: 0s; }
+        .ltu-member-slide:nth-child(2) { animation-delay: 5s; }
+        .ltu-member-slide:nth-child(3) { animation-delay: 10s; }
+        .ltu-member-slide:nth-child(4) { animation-delay: 15s; }
+        .ltu-member-slide:nth-child(5) { animation-delay: 20s; }
+        .ltu-member-slide img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+        }
+        .ltu-member-banner::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg, rgba(7,18,37,.80) 0%, rgba(7,18,37,.30) 48%, rgba(7,18,37,.16) 100%),
+                linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.42));
+            pointer-events: none;
+        }
+        @keyframes ltuMemberFadeZoom {
+            0% { opacity: 0; transform: scale(1.065); }
+            5% { opacity: 1; }
+            18% { opacity: 1; transform: scale(1.012); }
+            23% { opacity: 0; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1); }
+        }
+        .ltu-banner-content {
+            position: relative; z-index: 2; height: 100%; padding: 18px 17px;
+            display: flex; flex-direction: column; justify-content: space-between; color: white;
+        }
+        .ltu-banner-kicker {
+            font-size: 10px; font-weight: 900; letter-spacing: 1.6px; color: rgba(255,255,255,.74);
+        }
+        .ltu-banner-title {
+            font-size: 25px; font-weight: 1000; letter-spacing: -1px; line-height: 1.02;
+            text-shadow: 0 8px 22px rgba(0,0,0,.32);
+        }
+        .ltu-banner-title span { color: var(--primary); }
+        .ltu-banner-sub {
+            font-size: 11px; font-weight: 800; color: rgba(255,255,255,.70); margin-top: 5px;
+        }
+        .ltu-banner-bottom {
+            display: flex; justify-content: space-between; align-items: flex-end; gap: 10px;
+        }
+        .ltu-banner-chip {
+            display: inline-flex; align-items: center; gap: 5px;
+            border: 1px solid rgba(255,255,255,.16); background: rgba(0,0,0,.28);
+            backdrop-filter: blur(8px); border-radius: 999px; padding: 6px 10px;
+            font-size: 10px; font-weight: 900;
+        }
+        .ltu-banner-dots { display: flex; gap: 5px; padding-bottom: 4px; }
+        .ltu-banner-dots span {
+            width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.3);
+        }
+        .ltu-banner-stats {
+            display: flex; gap: 14px; margin-top: 6px;
+        }
+        .ltu-banner-stat {
+            font-size: 18px; font-weight: 1000; color: white; letter-spacing: -0.5px;
+        }
+        .ltu-banner-stat small {
+            display: block; font-size: 9px; font-weight: 800; color: rgba(255,255,255,.55); letter-spacing: 0.3px;
+        }
+
+
+        /* ============================================
+           🧱 MEMBERS SPORTY BOX UI OVERRIDE
+           - 상단바/로고는 그대로 유지
+           - mypage.html과 동일한 모바일 폭/여백 감각
+           - 라운드형 카드 → 각진 박스형 스포츠 스타일
+           ============================================ */
+        body {
+            background:
+                radial-gradient(circle at 50% -12%, rgba(255,46,99,.14), transparent 30%),
+                linear-gradient(180deg, #f6f7fb 0%, #eef2f7 100%);
+        }
+        .container {
+            max-width: 680px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+        .ltu-member-banner {
+            height: 118px;
+            border-radius: 8px !important;
+            margin: 12px 0 14px;
+            border: 1px solid rgba(15,23,42,.18);
+            box-shadow: 0 14px 30px rgba(15,23,42,.16);
+        }
+        .ltu-banner-content { padding: 14px 15px; }
+        .ltu-banner-title { font-size: 21px; letter-spacing: -0.7px; }
+        .ltu-banner-sub { display: none; }
+        .ltu-banner-chip { border-radius: 4px; }
+        .guide-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 14px; }
+        .guide-item,
+        .chart-section,
+        .search-bar,
+        .member-card,
+        .stat-row,
+        .review-item,
+        .no-result {
+            border-radius: 8px !important;
+        }
+        .guide-item,
+        .chart-section,
+        .search-bar,
+        .member-card {
+            border: 1px solid rgba(15,23,42,.10);
+            box-shadow: 0 10px 24px rgba(15,23,42,.07);
+            background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+        }
+        .guide-item { padding: 15px; }
+        .chart-section { padding: 16px; margin-bottom: 14px; }
+        .member-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .member-card {
+            padding: 13px;
+            transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+        }
+        .member-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255,46,99,.25);
+            box-shadow: 0 12px 28px rgba(15,23,42,.10);
+        }
+        .m-img {
+            border-radius: 8px !important;
+            border: 2px solid #eef2f7;
+        }
+        .tier-badge,
+        .search-result-badge,
+        .search-clear-btn {
+            border-radius: 4px !important;
+        }
+        .stat-row {
+            background: #f4f6f9;
+            border: 1px solid #e2e8f0;
+        }
+        .review-box { border-top: 1px solid #e2e8f0; }
+        .review-item { border-left-width: 4px; }
+        .initial-filter-wrap {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding: 2px 0 12px;
+            margin-top: -8px;
+            scrollbar-width: none;
+        }
+        .initial-filter-wrap::-webkit-scrollbar { display: none; }
+        .initial-btn {
+            flex: 0 0 auto;
+            min-width: 34px;
+            height: 34px;
+            border: 1px solid #dbe3ee;
+            background: #fff;
+            color: #64748b;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 1000;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 6px 14px rgba(15,23,42,.04);
+        }
+        .initial-btn.active {
+            border-color: #0f172a;
+            background: #0f172a;
+            color: #fff;
+            box-shadow: 0 8px 18px rgba(15,23,42,.14);
+        }
+        .member-pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 7px;
+            margin: 16px 0 4px;
+        }
+        .page-btn {
+            min-width: 36px;
+            height: 36px;
+            border: 1px solid #dbe3ee;
+            background: #fff;
+            color: #475569;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 1000;
+            font-family: inherit;
+            cursor: pointer;
+        }
+        .page-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+        .page-btn:disabled {
+            opacity: .35;
+            cursor: not-allowed;
+        }
+        @media (max-width: 480px) {
+            .container { margin: 14px auto; padding: 0 12px; }
+            .ltu-member-banner { height: 94px !important; margin: 10px 0 12px; }
+            .ltu-banner-kicker { font-size: 9px; letter-spacing: 1.2px; }
+            .ltu-banner-title { font-size: 17px; line-height: 1.05; }
+            .ltu-banner-chip { font-size: 8px; padding: 4px 7px; }
+            .ltu-banner-stats { gap: 10px; }
+            .ltu-banner-stat { font-size: 14px; }
+            .guide-item { padding: 13px; }
+            .chart-section { padding: 13px; }
+            .search-bar { padding: 11px 12px; margin-bottom: 14px; }
+            .member-grid { grid-template-columns: 1fr; gap: 10px; }
+            .member-card { padding: 13px; }
+            .m-header { gap: 12px; }
+            .m-profile { width: 86px; }
+        }
+
+    </style>
+    <style>
+        /* 🏈 스포티 통일 테마 (홈과 동일: 각지게 + 왼쪽 액센트 바 + 대비) */
+        .guide-item, .chart-section { border-radius:5px !important; box-shadow:0 1px 4px rgba(0,0,0,.06) !important; }
+        .chart-section { border-left:3px solid var(--primary) !important; }
+        .member-card { border-radius:5px !important; }
+        .rank-col, .search-bar { border-radius:4px !important; }
+        .tier-badge, .role-badge, .search-result-badge, .search-clear-btn, .chat-unread-badge { border-radius:3px !important; }
+        .photo-modal-inner { border-radius:6px !important; }
+        .ltu-member-banner { border-radius:5px !important; }
+    </style>
+<script src="app-update.js" defer></script><script type="module" src="chat-launcher.js"></script></head>
+<body>
+
+<header>
+    <div class="brand-title">
+        <img src="makchayu_logo.png" alt="막차유 로고" onerror="this.onerror=null;this.src='ltu_simple_icon.png'">
+        <div class="brand-text"><span class="brand-main">LTU</span><span class="brand-sub">nited</span></div>
+    </div>
+    <div class="user-name" id="loginUser">사용자</div>
+</header>
+
+<div class="container">
+    <!-- ✨ 회원 현황 배너 -->
+        <!-- 🚂 공용 히어로 배너 (hero-banner.js) -->
+    <div id="heroBannerMount"></div>
+
+    <!-- 🔍 검색창 (최상단) -->
+    <div class="search-bar" id="searchBar">
+        <div class="search-icon">🔍</div>
+        <input type="text" class="search-input" id="searchInput" 
+               placeholder="회원 이름으로 검색..." autocomplete="off">
+        <div class="search-result-badge" id="searchResultBadge" style="display:none;">0명</div>
+        <button class="search-clear-btn" id="searchClearBtn" onclick="clearSearch()">✕</button>
+    </div>
+
+    <!-- 🔤 가나다 초성 필터 -->
+    <div class="initial-filter-wrap" id="initialFilter" aria-label="초성 회원 필터"></div>
+
+    <!-- 👥 회원 수 (member-count.js · 2×2 · 처음 보일 때 카운트업) -->
+    <div class="chart-section">
+        <div class="sec-title" style="font-size:16px; font-weight:800; margin-bottom:12px;"><svg class="sec-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8.7" cy="9" r="3"/><path d="M2.8 19.4c0-3.1 2.6-5.4 5.9-5.4s5.9 2.3 5.9 5.4"/><path d="M16.2 6.4a3 3 0 0 1 0 5.2"/><path d="M17.6 14.2c2.3.5 3.9 2.3 3.9 5.2"/></svg>회원 수</div>
+        <div id="memberCountBox"></div>
+    </div>
+
+    <!-- 🔥 활동참여 TOP 5 (모바일에서도 5명 모두 보이게 높이 고정) -->
+    <div class="chart-section">
+        <div class="sec-title" style="font-size:16px; font-weight:800; margin-bottom:15px;"><svg class="sec-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12c2-2.96 0-7-1-8 0 3.038-1.773 4.741-3 6-1.226 1.26-2 3.24-2 5a6 6 0 1 0 12 0c0-1.532-1.056-3.94-2-5-1.786 3-2.791 3-4 2z"/></svg>활동참여 TOP 5</div>
+        <div style="position:relative; height:220px;"><canvas id="topChart"></canvas></div>
+    </div>
+
+    <!-- 🏆 등급 산정 기준 (기본 접힘) -->
+    <details class="fold-sec">
+        <summary><svg class="sec-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10"/><path d="M17 4v8a5 5 0 0 1-10 0V4"/><circle cx="5" cy="9" r="2"/><circle cx="19" cy="9" r="2"/></svg>등급 산정 기준 <span class="fold-sub">(활동참여)</span><svg class="fold-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="fold-body">
+            <div class="guide-text">
+                - <b>🌱 유망주 (0~2참여)</b>: 클럽 신규 멤버<br>
+                - <b>🪑 벤치멤버 (3~5참여)</b>: 활동 시작 단계<br>
+                - <b>🏃 주전멤버 (6~11참여)</b>: 정기 참여 검증 멤버<br>
+                - <b>🔥 에이스 (12~23참여)</b>: 클럽 활동의 핵심 주축<br>
+                - <b>👑 레전드 (24~47참여)</b>: 막차유 역사의 산증인<br>
+                - <b>🏆 발롱도르 (48참여+)</b>: 최고의 명예를 얻은 전설
+            </div>
+        </div>
+    </details>
+
+    <!-- 🏅 랭킹 (누적 · 득점/도움/수비/매너 TOP3 · 기본 접힘) -->
+    <details class="fold-sec">
+        <summary><svg class="sec-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v3M8 4v6M16 4v6"/><path d="M12 18.5l-3 1.5.5-3.5-2-2 3-.5 1.5-3 1.5 3 3 .5-2 2 .5 3.5z"/></svg>랭킹 <span class="fold-sub">(Ranking)</span><svg class="fold-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="fold-body">
+            <div style="font-size:11px; color:#94a3b8; font-weight:600; margin-bottom:14px;">동료평가로 쌓인 부문별 TOP 3 · 누적 기준</div>
+            <div id="statRanking" class="rank-grid"></div>
+        </div>
+    </details>
+
+    <!-- 🕐 최근 경기 랭킹 (직전 5경기 합산 · 기본 접힘) -->
+    <details class="fold-sec">
+        <summary><svg class="sec-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>최근 경기 랭킹<svg class="fold-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="fold-body">
+            <div style="font-size:11px; color:#94a3b8; font-weight:600; margin-bottom:14px;">직전 5경기 합산 TOP 3</div>
+            <div id="recentRanking" class="rank-grid"></div>
+        </div>
+    </details>
+
+    <div id="memberGrid" class="member-grid"></div>
+    <div id="memberPagination" class="member-pagination"></div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAo6x8MqKqEJVstH9ZjDa6tyrOPHEo6CfM",
+        authDomain: "makcha-united-final.firebaseapp.com",
+        databaseURL: "https://makcha-united-final-default-rtdb.firebaseio.com",
+        projectId: "makcha-united-final",
+        storageBucket: "makcha-united-final.firebasestorage.app",
+        messagingSenderId: "631914143856",
+        appId: "1:631914143856:web:5d96e048da9a19a90954b5"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const userKey = localStorage.getItem('userKey');
+
+    function bindChatUnreadBadge() {
+        const badges = document.querySelectorAll('[data-chat-unread-badge]');
+        if (!badges.length || !userKey) return;
+        onValue(ref(db, `soccer_club/inquiries/${userKey}`), (snap) => {
+            const room = snap.val() || {};
+            const count = Number(room.memberUnreadCount || 0);
+            badges.forEach(badge => {
+                if (count > 0) {
+                    badge.textContent = count > 9 ? '9+' : `+${count}`;
+                    badge.style.display = 'inline-flex';
+                    badge.style.alignItems = 'center';
+                    badge.style.justifyContent = 'center';
+                } else {
+                    badge.textContent = '';
+                    badge.style.display = 'none';
+                }
+            });
+        });
+    }
+    bindChatUnreadBadge();
+
+    // ✨ 전역 멤버 리스트 + 검색 상태
+    let allMemberList = [];
+    let searchKeyword = '';
+    let selectedInitial = 'all';
+    let currentPage = 1;
+    const PAGE_SIZE = 10;
+    const INITIALS = ['ㄱ','ㄴ','ㄷ','ㄹ','ㅁ','ㅂ','ㅅ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+    const HANGUL_INITIALS = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+    const FILTER_INITIALS = ['ㄱ','ㄴ','ㄷ','ㄹ','ㅁ','ㅂ','ㅅ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+
+    // ✨ 동료평가 v2(투표식) 헬퍼
+    let currentMatchReviews = {};   // match_reviews 캐시 (최근 경기 뱃지용)
+    let currentStadiums = {};       // stadiums 캐시 (경기 날짜/이름용)
+
+    // 누적 뱃지 모음 (아이콘 1개 = 1회, 최대 9개 후 "외 N개")
+    function badgeStackHTML(icon, count){
+        if(!count || count <= 0) return `<span class="badge-empty">아직 없음</span>`;
+        const shown = Math.min(count, 9);
+        let html = '';
+        for(let i=0; i<shown; i++) html += `<span class="stack-badge">${icon}</span>`;
+        if(count > 9) html += `<span class="stack-more">외 ${count - 9}</span>`;
+        return html;
+    }
+    // match_reviews → 경기별 mvp 최다 득표(동점=공동 전원) MVP 집계 { uid: 수 }
+    function computeMvpMap(matchReviews){
+        const out = {};
+        Object.keys(matchReviews || {}).forEach(mid => {
+            const per = matchReviews[mid] || {}; let best = 0; let win = [];
+            Object.keys(per).forEach(uid => {
+                const v = (per[uid] && per[uid].mvp) || 0; if(v <= 0) return;
+                if(v > best){ best = v; win = [uid]; }
+                else if(v === best){ win.push(uid); }
+            });
+            win.forEach(uid => out[uid] = (out[uid] || 0) + 1);
+        });
+        return out;
+    }
+    // 특정 경기 MVP(최다 득표) 여부
+    function isMvpOfMatch(mid, uid){
+        const per = currentMatchReviews[mid] || {};
+        let best = 0; const win = new Set();
+        Object.keys(per).forEach(u => { const v = (per[u] && per[u].mvp) || 0; if(v <= 0) return; if(v > best){ best = v; win.clear(); win.add(u); } else if(v === best){ win.add(u); } });
+        return best > 0 && win.has(uid);
+    }
+    // 회원의 최근 경기에서 받은 뱃지 HTML (한 번에)
+    function recentMatchBadgesHTML(uid){
+        const mine = Object.keys(currentMatchReviews)
+            .filter(mid => currentMatchReviews[mid] && currentMatchReviews[mid][uid])
+            .map(mid => ({ mid, date: (currentStadiums[mid] && currentStadiums[mid].date) || '', v: currentMatchReviews[mid][uid] || {} }))
+            .sort((a,b) => String(b.date).localeCompare(String(a.date)));
+        if(mine.length === 0) return '';
+        const { mid, v } = mine[0];
+        const parts = [];
+        if(isMvpOfMatch(mid, uid)) parts.push(`<span class="rme-badge badge-mvp">🥇 MVP</span>`);
+        if((v.assist||0)>0)  parts.push(`<span class="rme-badge badge-assist">🅰️ 도움 ${v.assist}</span>`);
+        if((v.defense||0)>0) parts.push(`<span class="rme-badge badge-defense">🛡️ 수비 ${v.defense}</span>`);
+        if((v.manner||0)>0)  parts.push(`<span class="rme-badge badge-manner">🤝 매너 ${v.manner}</span>`);
+        if(parts.length === 0) return '';
+        const label = (currentStadiums[mid] && currentStadiums[mid].name) ? currentStadiums[mid].name : '최근 경기';
+        return `<div class="rme-label">🏅 최근 경기 · ${label}</div><div class="rme-badges">${parts.join('')}</div>`;
+    }
+
+    function getNameInitial(name) {
+        const first = String(name || '').trim().charAt(0);
+        if (!first) return '#';
+        const code = first.charCodeAt(0);
+        if (code >= 0xAC00 && code <= 0xD7A3) {
+            const raw = HANGUL_INITIALS[Math.floor((code - 0xAC00) / 588)] || '#';
+            if (raw === 'ㄲ') return 'ㄱ';
+            if (raw === 'ㄸ') return 'ㄷ';
+            if (raw === 'ㅃ') return 'ㅂ';
+            if (raw === 'ㅆ') return 'ㅅ';
+            if (raw === 'ㅉ') return 'ㅈ';
+            return raw;
+        }
+        return '#';
+    }
+
+    function renderInitialTabs() {
+        const wrap = document.getElementById('initialFilter');
+        if (!wrap) return;
+        const tabs = ['all', ...FILTER_INITIALS];
+        wrap.innerHTML = tabs.map(v => {
+            const label = v === 'all' ? '전체' : v;
+            return `<button class="initial-btn ${selectedInitial === v ? 'active' : ''}" onclick="window.selectInitial('${v}')">${label}</button>`;
+        }).join('');
+    }
+
+    onValue(ref(db, 'soccer_club'), (snap) => {
+        const data = snap.val() || {};
+        const members = data.members || {};
+        const activities = data.activities || {};
+        currentMatchReviews = data.match_reviews || {};
+        currentStadiums = data.stadiums || {};
+        const mvpMap = computeMvpMap(currentMatchReviews);
+
+        if(userKey && members[userKey]) document.getElementById('loginUser').innerText = members[userKey].name;
+        
+        // ✨ 배너 통계 업데이트 (배너가 공용 배너로 교체되어 요소가 없을 수 있음 → null 가드)
+        const totalCount = Object.keys(members).length;
+        const activeCount = Object.values(members).filter(m => (m.status || '활동중') === '활동중').length;
+        const _btm = document.getElementById('bannerTotalMembers');
+        if (_btm) _btm.innerHTML = `${totalCount}<small>총 회원</small>`;
+        const _bam = document.getElementById('bannerActiveMembers');
+        if (_bam) _bam.innerHTML = `${activeCount}<small>활동 중</small>`;
+        
+        let memberList = [];
+        const currentYear = 2026; 
+
+        Object.keys(members).forEach(uid => {
+            const m = members[uid];
+            let totalPoint = 0;
+            const userActs = activities[uid] || {};
+            
+            // ✨ 새 구조 + 과거 구조 둘 다 지원
+            Object.entries(userActs).forEach(([key, value]) => {
+                if (key === 'matches') {
+                    // 새 구조: activities/{uid}/matches/{matchId}/{count, ...}
+                    if (value && typeof value === 'object') {
+                        Object.values(value).forEach(mt => {
+                            if (mt && typeof mt === 'object') totalPoint += (mt.count || 0);
+                        });
+                    }
+                } else {
+                    // 과거 구조: activities/{uid}/{year}/{month}/...
+                    if (value && typeof value === 'object') {
+                        Object.values(value).forEach(mo => {
+                            if (typeof mo === 'number') totalPoint += mo;
+                            else if (mo && typeof mo === 'object') {
+                                Object.values(mo).forEach(v => {
+                                    if (typeof v === 'number') totalPoint += v;
+                                    else if (v && typeof v === 'object') totalPoint += (v.count || 0);
+                                });
+                            }
+                        });
+                    } else if (typeof value === 'number') {
+                        totalPoint += value;
+                    }
+                }
+            });
+
+            const tiers = [
+                {n:"🌱 유망주", v:0, c:"tier-유망주"}, {n:"🪑 벤치멤버", v:3, c:"tier-벤치멤버"}, 
+                {n:"🏃 주전멤버", v:6, c:"tier-주전멤버"}, {n:"🔥 에이스", v:12, c:"tier-에이스"}, 
+                {n:"👑 레전드", v:24, c:"tier-레전드"}, {n:"🏆 발롱도르", v:48, c:"tier-발롱도르"}
+            ];
+            const tier = [...tiers].reverse().find(t => totalPoint >= t.v) || tiers[0];
+            
+            let korAge = "미등록";
+            if (m.birth) {
+                const birthYear = parseInt(String(m.birth).substring(0, 4));
+                if (!isNaN(birthYear)) {
+                    korAge = (currentYear - birthYear) + 1;
+                }
+            }
+
+            const matchCount = (userActs.matches && typeof userActs.matches === 'object') ? Object.keys(userActs.matches).length : 0;
+            memberList.push({ ...m, uid, totalPoint, tier, korAge, matchCount, mvpCount: mvpMap[uid] || 0 });
+        });
+
+        memberList.sort((a, b) => b.totalPoint - a.totalPoint);
+        allMemberList = memberList; // ✨ 전역 저장
+        
+        const topCtx = document.getElementById('topChart').getContext('2d');
+        if(window.topChartObj) window.topChartObj.destroy();
+        window.topChartObj = new Chart(topCtx, {
+            type: 'bar',
+            data: {
+                labels: memberList.slice(0,5).map(m => m.name),
+                datasets: [{ data: memberList.slice(0,5).map(m => m.totalPoint), backgroundColor: '#ff2e63', borderRadius: 5 }]
+            },
+            options: {
+                indexAxis: 'y',
+                maintainAspectRatio: false,                              // 높이 고정 (모바일에서 이름이 건너뛰어지던 문제)
+                plugins: { legend: { display: false } },
+                scales: { y: { ticks: { autoSkip: false } } }            // 5명 이름 모두 표시
+            }
+        });
+
+        // 👥 회원 수 카드 (전체 회원 기준 · 최근 30일은 실제 가입일 createdAt 기준)
+        if (window.LtuMemberCount) window.LtuMemberCount.render(document.getElementById('memberCountBox'), members, { layout: 'grid' });
+
+        // 🏅 랭킹 렌더 (전체 회원 기준, 검색/필터 무관)
+        renderStatRanking();
+        renderRecentRanking();
+
+        // ✨ 멤버 카드 렌더 (검색 키워드로 필터링)
+        renderMemberCards();
+    });
+
+    // 🏅 득점/도움/수비/매너 부문별 TOP 3
+    const RANK_DEFS = [
+        { key: 'goals',   label: '⚽ 득점', unit: '골' },
+        { key: 'assist',  label: '🅰️ 도움', unit: '회' },
+        { key: 'defense', label: '🛡️ 수비', unit: '회' },
+        { key: 'manner',  label: '🤝 매너', unit: '회' }
+    ];
+    // 공통 랭킹 그리드 렌더러 — statFor(key) => [{name, age, val}, ...] (정렬 전 전체)
+    function renderRankGrid(elId, statFor) {
+        const el = document.getElementById(elId);
+        if (!el) return;
+        const place = ['1위', '2위', '3위'];
+        el.innerHTML = RANK_DEFS.map(def => {
+            const ranked = statFor(def.key)
+                .filter(r => r.val > 0)
+                .sort((a, b) => b.val - a.val)
+                .slice(0, 3);
+            const rows = ranked.length
+                ? ranked.map((r, i) => {
+                    const ageText = (typeof r.age === 'number') ? `${r.age}세` : '';
+                    return `<div class="rank-row">
+                                <span class="rank-place rank-place-${i + 1}">${place[i]}</span>
+                                <span class="rank-name">${r.name}</span>
+                                <span class="rank-age">${ageText}</span>
+                                <span class="rank-count">${r.val}${def.unit}</span>
+                            </div>`;
+                }).join('')
+                : `<div class="rank-empty">아직 기록 없음</div>`;
+            return `<div class="rank-col"><div class="rank-head">${def.label}</div>${rows}</div>`;
+        }).join('');
+    }
+    // 누적 랭킹 (members/{uid}/stats)
+    function renderStatRanking() {
+        renderRankGrid('statRanking', key =>
+            allMemberList.map(m => ({ name: m.name || '회원', age: m.korAge, val: (m.stats && m.stats[key]) || 0 }))
+        );
+    }
+    // 최근 경기 랭킹 (직전 5경기 match_reviews 합산)
+    function renderRecentRanking() {
+        // 평가 데이터가 있는 경기를 날짜 최신순으로 5개
+        const recentMids = Object.keys(currentMatchReviews)
+            .map(mid => ({ mid, date: (currentStadiums[mid] && currentStadiums[mid].date) || '' }))
+            .sort((a, b) => String(b.date).localeCompare(String(a.date)))
+            .slice(0, 5)
+            .map(x => x.mid);
+
+        // uid별 5경기 합산
+        const agg = {};
+        recentMids.forEach(mid => {
+            const per = currentMatchReviews[mid] || {};
+            Object.keys(per).forEach(uid => {
+                const v = per[uid] || {};
+                const a = agg[uid] || (agg[uid] = { goals: 0, assist: 0, defense: 0, manner: 0 });
+                a.goals += v.goals || 0; a.assist += v.assist || 0; a.defense += v.defense || 0; a.manner += v.manner || 0;
+            });
+        });
+
+        const memberById = {};
+        allMemberList.forEach(m => { memberById[m.uid] = m; });
+
+        renderRankGrid('recentRanking', key =>
+            Object.keys(agg).map(uid => {
+                const m = memberById[uid] || {};
+                return { name: m.name || '회원', age: m.korAge, val: agg[uid][key] || 0 };
+            })
+        );
+    }
+
+    function renderPagination(totalCount) {
+        const wrap = document.getElementById('memberPagination');
+        if (!wrap) return;
+        const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+        if (totalPages <= 1) {
+            wrap.innerHTML = '';
+            return;
+        }
+        currentPage = Math.min(Math.max(1, currentPage), totalPages);
+        let pageBtns = '';
+        for (let i = 1; i <= totalPages; i++) {
+            pageBtns += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="window.changeMemberPage(${i})">${i}</button>`;
+        }
+        wrap.innerHTML = `
+            <button class="page-btn" onclick="window.changeMemberPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>‹</button>
+            ${pageBtns}
+            <button class="page-btn" onclick="window.changeMemberPage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}>›</button>
+        `;
+    }
+
+    window.changeMemberPage = (page) => {
+        currentPage = page;
+        renderMemberCards();
+        document.getElementById('memberGrid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    window.selectInitial = (initial) => {
+        selectedInitial = initial;
+        currentPage = 1;
+        renderInitialTabs();
+        renderMemberCards();
+    };
+
+    function renderMemberCards() {
+        const grid = document.getElementById('memberGrid');
+        const badge = document.getElementById('searchResultBadge');
+        renderInitialTabs();
+        
+        // 검색 + 초성 필터링
+        const filtered = allMemberList
+            .filter(m => {
+                if (!searchKeyword) return true;
+                return (m.name || '').toLowerCase().includes(searchKeyword.toLowerCase());
+            })
+            .filter(m => selectedInitial === 'all' || getNameInitial(m.name) === selectedInitial);
+        
+        // 검색/필터 결과 뱃지
+        if (searchKeyword || selectedInitial !== 'all') {
+            badge.style.display = 'block';
+            badge.innerText = `${filtered.length}명`;
+        } else {
+            badge.style.display = 'none';
+        }
+        
+        // 결과 없음
+        if (filtered.length === 0) {
+            document.getElementById('memberPagination').innerHTML = '';
+            const filterLabel = selectedInitial === 'all' ? '' : ` · ${selectedInitial}`;
+            grid.innerHTML = `
+                <div class="no-result">
+                    <div style="font-size:40px; margin-bottom:10px;">🔍</div>
+                    <div style="font-weight:700; margin-bottom:4px;">검색 결과 없음${filterLabel}</div>
+                    <div style="font-size:12px; color:#cbd5e1;">다른 이름이나 초성으로 검색해보세요</div>
+                </div>
+            `;
+            return;
+        }
+        
+        const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+        currentPage = Math.min(Math.max(1, currentPage), totalPages);
+        const startIdx = (currentPage - 1) * PAGE_SIZE;
+        const paged = filtered.slice(startIdx, startIdx + PAGE_SIZE);
+        
+        grid.innerHTML = paged.map(m => {
+            const st = m.stats || {};
+            const goals = st.goals || 0, assist = st.assist || 0, defense = st.defense || 0, manner = st.manner || 0;
+            const reviews = m.reviewsReceived || 0;
+            const recentHtml = recentMatchBadgesHTML(m.uid);
+
+            return `
+                <div class="member-card ${m.role==='협회장'?'rc-owner':m.role==='감독'?'rc-coach':m.role==='매니저'?'rc-manager':''}">
+                    <div class="m-header">
+                        <!-- 좌: 사진 + 등급 + 이름 -->
+                        <div class="m-profile">
+                            <img src="${m.url || 'http://ltu.dothome.co.kr/default_profile_icon.png'}" class="m-img" onclick="openPhotoModal(this.src, '${(m.name||'').replace(/'/g,"\\'")}')">
+                            <span class="tier-badge ${m.tier.c}">${m.tier.n}</span>
+                            ${m.role ? `<span class="role-badge ${m.role==='협회장'?'role-owner':m.role==='감독'?'role-coach':'role-manager'}">${m.role==='협회장'?'👑':m.role==='감독'?'🎯':'⭐'} ${m.role}</span>` : ''}
+                            <div class="m-name">${m.name} ${m.gender==='남성'?'<span class="gender-mark gm-male">男</span>':m.gender==='여성'?'<span class="gender-mark gm-female">女</span>':''}</div>
+                            <div class="m-sub">${m.korAge}세 | ${m.totalPoint}참여</div>
+                        </div>
+                        <!-- 우: 득점 · 도움 요약 -->
+                        <div class="m-chart-wrap" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:3px;">
+                            <div style="font-size:9px; font-weight:800; color:#777; line-height:1.15; margin-bottom:2px;">🏅 현재<br>플레이 스타일</div>
+                            <div style="display:flex; gap:8px;">
+                                <div><div style="font-size:20px; font-weight:900; color:#ff2e63; line-height:1;">${goals}</div><div style="font-size:9px; color:#999; font-weight:800;">⚽ 득점</div></div>
+                                <div><div style="font-size:20px; font-weight:900; color:#38bdf8; line-height:1;">${assist}</div><div style="font-size:9px; color:#999; font-weight:800;">🅰️ 도움</div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 누적 지표 -->
+                    <div style="display:flex; gap:6px; justify-content:center; font-size:10px; color:#888; font-weight:700; margin:2px 0 8px;">
+                        <span>🗓️ 최근경기 <b style="color:#ff2e63;">${m.matchCount}회</b></span> ·
+                        <span>🥇 MVP <b style="color:#ff2e63;">${m.mvpCount}</b></span> ·
+                        <span>📝 평가 <b style="color:#ff2e63;">${reviews}</b></span>
+                    </div>
+                    <!-- 뱃지 누적 (도움/수비/매너) -->
+                    <div class="stat-stars">
+                        <div class="mbadge-row"><span class="mbadge-label">🅰️ 도움</span><span class="mbadge-stack">${badgeStackHTML('🅰️', assist)}</span></div>
+                        <div class="mbadge-row"><span class="mbadge-label">🛡️ 수비</span><span class="mbadge-stack">${badgeStackHTML('🛡️', defense)}</span></div>
+                        <div class="mbadge-row"><span class="mbadge-label">🤝 매너</span><span class="mbadge-stack">${badgeStackHTML('🤝', manner)}</span></div>
+                    </div>
+
+                    <div class="review-box">
+                        ${recentHtml || '<div style="font-size:10px; color:#ddd; text-align:center; padding-top:10px;">최근 경기 평가가 없습니다.</div>'}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // (레이더 차트 → 별점 표시로 교체됨. 카드별 캔버스 렌더 불필요)
+        renderPagination(filtered.length);
+    } // ← renderMemberCards 함수 끝
+
+    // ✨ 검색 이벤트
+    const searchInput = document.getElementById('searchInput');
+    const searchBar = document.getElementById('searchBar');
+    const clearBtn = document.getElementById('searchClearBtn');
+
+    searchInput.addEventListener('input', (e) => {
+        searchKeyword = e.target.value.trim();
+        currentPage = 1;
+        clearBtn.classList.toggle('show', searchKeyword.length > 0);
+        renderMemberCards();
+    });
+    searchInput.addEventListener('focus', () => searchBar.classList.add('focused'));
+    searchInput.addEventListener('blur', () => searchBar.classList.remove('focused'));
+
+    window.clearSearch = () => {
+        searchInput.value = '';
+        searchKeyword = '';
+        selectedInitial = 'all';
+        currentPage = 1;
+        clearBtn.classList.remove('show');
+        renderInitialTabs();
+        renderMemberCards();
+        searchInput.focus();
+    };
+</script>
+<nav class="tabbar">
+    <a href="mypage.html" class="tabbar-item">
+        <div class="tabbar-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.6 12 3l9 7.6"/><path d="M5.5 9.6V20h13V9.6"/><path d="M9.7 20v-4.8h4.6V20"/></svg></div>
+        <div class="tabbar-label">홈</div>
+    </a>
+    <a href="members.html" class="tabbar-item active">
+        <div class="tabbar-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.7" cy="9" r="3"/><path d="M2.8 19.4c0-3.1 2.6-5.4 5.9-5.4s5.9 2.3 5.9 5.4"/><path d="M16.2 6.4a3 3 0 0 1 0 5.2"/><path d="M17.6 14.2c2.3.5 3.9 2.3 3.9 5.2"/></svg></div>
+        <div class="tabbar-label">회원</div>
+    </a>
+    <a href="gallery.html" class="tabbar-item">
+        <div class="tabbar-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2.6"/><path d="M10.4 9.4l4.3 2.6-4.3 2.6z" fill="currentColor" stroke="none"/></svg></div>
+        <div class="tabbar-label">영상</div>
+    </a>
+    <a href="shop.html" class="tabbar-item">
+        <div class="tabbar-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5.6 8h12.8l-1 11.5a1 1 0 0 1-1 .9H7.6a1 1 0 0 1-1-.9z"/><path d="M9 8V6.3a3 3 0 0 1 6 0V8"/></svg></div>
+        <div class="tabbar-label">상점</div>
+    </a>
+    <a href="profile.html" class="tabbar-item">
+        <div class="tabbar-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.6 20.4c0-4 3.3-6.9 7.4-6.9s7.4 2.9 7.4 6.9"/></svg></div>
+        <div class="tabbar-label">프로필</div>
+    </a>
+</nav>
+
+<!-- 📷 프로필 사진 확대 모달 -->
+<div class="photo-modal" id="photoModal" onclick="if(event.target===this) closePhotoModal()">
+    <button class="photo-modal-close" onclick="closePhotoModal()" aria-label="닫기">&times;</button>
+    <div class="photo-modal-inner">
+        <img class="photo-modal-img" id="photoModalImg" src="" alt="프로필 사진">
+        <div class="photo-modal-name" id="photoModalName"></div>
+    </div>
+</div>
+<script>
+    function openPhotoModal(src, name) {
+        document.getElementById('photoModalImg').src = src;
+        document.getElementById('photoModalName').textContent = name || '';
+        document.getElementById('photoModal').classList.add('show');
+    }
+    function closePhotoModal() {
+        document.getElementById('photoModal').classList.remove('show');
+    }
+    document.addEventListener('keydown', function(e){
+        if (e.key === 'Escape') closePhotoModal();
+    });
+</script>
+<script src="hero-banner.js"></script>
+</body>
+</html>

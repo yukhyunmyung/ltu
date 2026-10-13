@@ -1,0 +1,25 @@
+{
+  "name": "막차 유나이티드",
+  "short_name": "막차유",
+  "description": "막차 유나이티드 경기 참여 및 회원 관리 앱",
+  "start_url": "mypage.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#071225",
+  "theme_color": "#ff2e63",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

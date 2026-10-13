@@ -1,0 +1,10 @@
+DirectoryIndex mypage.html
+
+# 화면 파일(html/js/json)은 열 때마다 서버에 최신인지 확인 (옛날 화면이 남는 문제 방지)
+# - 사진(png/jpg)은 해당 없음
+# - mod_headers 가 없는 서버에서는 이 블록이 그냥 무시됨
+<IfModule mod_headers.c>
+    <FilesMatch "\.(html|js|json)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+</IfModule>

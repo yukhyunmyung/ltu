@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <title>공지 게시판 - 막차유 🚂</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        :root { --primary: #252a34; --point: #ff2e63; --bg: #f4f7fa; --gray: #8e8e93; }
+        body { font-family: 'Pretendard', sans-serif; background: var(--bg); margin: 0; padding-bottom: 80px; color: #333; }
+        
+        header { 
+            background: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top:0; z-index:100; height: 50px;
+        }
+        .nav-link { font-size: 13px; font-weight: 700; color: var(--gray); text-decoration: none; border: 1px solid #eee; padding: 5px 10px; border-radius: 8px; }
+        .header-title { font-weight: 900; color: var(--primary); font-size: 16px; flex: 1; text-align: center; }
+        .user-name { font-size: 13px; font-weight: 700; color: var(--primary); text-align: right; min-width: 60px; }
+
+        .container { max-width: 700px; margin: 20px auto; padding: 0 15px; }
+
+        .post-card { 
+            background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05); border-top: 4px solid var(--primary);
+        }
+        .post-badge { display: inline-block; background: var(--point); color: white; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 4px; margin-bottom: 10px; }
+        .post-title { font-size: 17px; font-weight: 800; color: #1a1a1a; margin-bottom: 8px; display: block; }
+        .post-content { font-size: 14px; color: #555; line-height: 1.6; white-space: pre-wrap; }
+        
+        .post-info { margin-top: 15px; padding-top: 12px; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--gray); }
+
+        .write-btn { position: fixed; bottom: 30px; right: 20px; background: var(--primary); color: white; width: 60px; height: 60px; border-radius: 30px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 20px rgba(0,0,0,0.2); border: none; font-size: 24px; cursor: pointer; z-index: 99; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+        .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 20px; padding: 25px; }
+        .modal-content h2 { margin: 0 0 20px 0; font-size: 18px; color: var(--primary); }
+        .modal-content input, .modal-content textarea { width: 100%; border: 1px solid #eee; background: #f9f9f9; padding: 12px; border-radius: 10px; margin-bottom: 15px; font-family: inherit; font-size: 14px; box-sizing: border-box; }
+        .modal-content textarea { height: 200px; resize: none; }
+        .modal-btns { display: flex; gap: 10px; }
+        .modal-btns button { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; }
+        .save-btn { background: var(--primary); color: white; }
+        .close-btn { background: #eee; color: #666; }
+
+        /* ✨ 공지 관리 버튼 */
+        .post-actions {
+            display: flex;
+            gap: 6px;
+            justify-content: flex-end;
+            margin-top: 12px;
+        }
+        .post-action-btn {
+            border: none;
+            border-radius: 8px;
+            padding: 7px 11px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .post-edit-btn {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+        .post-delete-btn {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .post-action-btn:active {
+            transform: scale(0.96);
+        }
+
+    </style>
+<script src="app-update.js" defer></script><script type="module" src="chat-launcher.js"></script></head>
+<body>
+
+<header>
+    <a href="mypage.html" class="nav-link">마이페이지</a>
+    <div class="header-title">공지 게시판</div>
+    <div class="user-name" id="userInfo">사용자</div>
+</header>
+
+<div class="container" id="boardList">
+    <p style="text-align:center; padding:50px; color:#999;">공지사항을 불러오는 중...</p>
+</div>
+
+<button class="write-btn" id="openModalBtn">+</button>
+
+<div class="modal" id="writeModal">
+    <div class="modal-content">
+        <h2>📢 새로운 공지 등록</h2>
+        <input type="text" id="postTitle" placeholder="공지 제목을 입력하세요">
+        <textarea id="postContent" placeholder="공지 내용을 입력하세요"></textarea>
+        <div class="modal-btns">
+            <button class="close-btn" id="closeModalBtn">취소</button>
+            <button class="save-btn" id="savePostBtn">공지 올리기</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, push, set, get, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = { databaseURL: "https://makcha-united-final-default-rtdb.firebaseio.com" };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const userKey = localStorage.getItem('userKey');
+    let me = null;
+
+    // 1. 사용자 정보 불러오기
+    async function fetchUser() {
+        if (!userKey) {
+            document.getElementById('userInfo').innerText = "미인증";
+            return;
+        }
+        const userRef = ref(db, `soccer_club/members/${userKey}`);
+        const snap = await get(userRef);
+        if (snap.exists()) {
+            me = snap.val();
+            document.getElementById('userInfo').innerText = me.name;
+        }
+    }
+    fetchUser();
+
+    // 2. 게시글 목록 불러오기 (홍길동 데이터 포함 실시간 연동)
+    const boardRef = ref(db, 'soccer_club/board');
+    onValue(boardRef, (snap) => {
+        const data = snap.val();
+        const listDiv = document.getElementById('boardList');
+        
+        if (!data) {
+            listDiv.innerHTML = "<p style='text-align:center; padding:100px 0; color:#bbb;'>등록된 공지사항이 없습니다.</p>";
+            return;
+        }
+        
+        const posts = Object.keys(data).map(id => ({ id, ...data[id] }))
+                        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        
+        listDiv.innerHTML = posts.map(p => {
+            const dateStr = p.createdAt ? new Date(p.createdAt).toLocaleDateString() : "이전 기록";
+            return `
+                <div class="post-card">
+                    <span class="post-badge">NOTICE</span>
+                    <strong class="post-title">${p.title}</strong>
+                    <div class="post-content">${p.content}</div>
+                    <div class="post-info">
+                        <span>✍️ ${p.writer || '알 수 없음'}</span>
+                        <span>📅 ${dateStr}</span>
+                    </div>
+                    <div class="post-actions">
+                        <button class="post-action-btn post-edit-btn" onclick="editPost('${p.id}')">수정</button>
+                        <button class="post-action-btn post-delete-btn" onclick="deletePost('${p.id}')">삭제</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    });
+
+
+    const ADMIN_PASSWORD = "0226";
+    let editingPostId = null;
+
+    function checkAdminPassword() {
+        const pw = prompt("관리자 비밀번호를 입력해주세요.");
+        return pw === ADMIN_PASSWORD;
+    }
+
+    window.editPost = async (postId) => {
+        if (!checkAdminPassword()) {
+            alert("비밀번호가 일치하지 않습니다.");
+            return;
+        }
+
+        try {
+            const postSnap = await get(ref(db, `soccer_club/board/${postId}`));
+            if (!postSnap.exists()) {
+                alert("공지 데이터를 찾을 수 없습니다.");
+                return;
+            }
+
+            const post = postSnap.val();
+            editingPostId = postId;
+
+            document.getElementById('postTitle').value = post.title || "";
+            document.getElementById('postContent').value = post.content || "";
+            document.querySelector('#writeModal h2').innerText = "✏️ 공지 수정";
+            document.getElementById('savePostBtn').innerText = "수정 완료";
+            modal.style.display = 'flex';
+        } catch (e) {
+            console.error(e);
+            alert("공지 수정 준비 중 오류가 발생했습니다.");
+        }
+    };
+
+    window.deletePost = async (postId) => {
+        if (!checkAdminPassword()) {
+            alert("비밀번호가 일치하지 않습니다.");
+            return;
+        }
+
+        if (!confirm("정말 이 공지를 삭제할까요?")) return;
+
+        try {
+            await remove(ref(db, `soccer_club/board/${postId}`));
+            alert("공지가 삭제되었습니다.");
+        } catch (e) {
+            console.error(e);
+            alert("공지 삭제 중 오류가 발생했습니다.");
+        }
+    };
+
+
+    // 3. 모달 제어 및 글 저장
+    const modal = document.getElementById('writeModal');
+    document.getElementById('openModalBtn').onclick = () => {
+        if(!me) return alert("로그인 정보를 불러오는 중입니다. 잠시만 기다려주세요.");
+        modal.style.display = 'flex';
+    };
+    
+    document.getElementById('closeModalBtn').onclick = () => {
+        modal.style.display = 'none';
+        document.getElementById('postTitle').value = '';
+        document.getElementById('postContent').value = '';
+    };
+
+    document.getElementById('savePostBtn').onclick = async () => {
+        const title = document.getElementById('postTitle').value.trim();
+        const content = document.getElementById('postContent').value.trim();
+
+        if (!title || !content) {
+            alert("제목과 내용을 모두 입력해주세요.");
+            return;
+        }
+
+        try {
+            if (editingPostId) {
+                await update(ref(db, `soccer_club/board/${editingPostId}`), {
+                    title,
+                    content,
+                    updatedAt: Date.now(),
+                    updatedBy: me?.name || "관리자"
+                });
+                alert("공지가 수정되었습니다.");
+            } else {
+                const newPostRef = push(boardRef);
+                await set(newPostRef, {
+                    title,
+                    content,
+                    writer: me?.name || "관리자",
+                    createdAt: Date.now()
+                });
+                alert("공지가 등록되었습니다.");
+            }
+
+            document.getElementById('postTitle').value = "";
+            document.getElementById('postContent').value = "";
+            editingPostId = null;
+            document.querySelector('#writeModal h2').innerText = "📢 새로운 공지 등록";
+            document.getElementById('savePostBtn').innerText = "공지 올리기";
+            modal.style.display = 'none';
+        } catch (e) {
+            console.error(e);
+            alert("저장 중 오류가 발생했습니다.");
+        }
+    };
+</script>
+</body>
+</html>

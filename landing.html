@@ -1,0 +1,2653 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>막차 유나이티드 🚂 - 인천 풋살/축구 동호회</title>
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <meta name="description" content="막차유나이티드에서 운영하는 인천 풋살/축구 모임 플랫폼 막차유(LTUnited). 비회원도 일회성 참여 가능!">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0D1630">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="막차유">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <!-- ✅ 카카오톡/SNS 링크 미리보기 (대표 이미지) -->
+    <!-- ⚠️ 카카오 크롤러는 JS를 실행하지 않으므로 아래 og:image 는 "고정 대표 이미지"입니다.
+         실제 배포 도메인과 직접 준비한 대표 이미지 파일명으로 아래 URL 2곳을 바꿔주세요. -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="막차 유나이티드 🚂 - 인천 풋살/축구 동호회">
+    <meta property="og:description" content="막차유나이티드에서 운영하는 인천 풋살/축구 모임. 비회원도 일회성 참여 가능!">
+    <meta property="og:image" content="https://ltu.dothome.co.kr/ltu_og.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="675">
+    <meta property="og:url" content="https://ltu.dothome.co.kr/landing.html">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://ltu.dothome.co.kr/ltu_og.jpg">
+
+    <style>
+        :root {
+            --pink: #ff2e63;
+            --pink2: #e91e63;
+            --navy: #071225;
+            --navy2: #0d1630;
+            --white: #ffffff;
+            --muted: rgba(255,255,255,0.7);
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body { margin: 0; min-height: 100%; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif; }
+        body {
+            color: white;
+            background:
+                radial-gradient(circle at 50% 14%, rgba(255,46,99,0.8), transparent 26%),
+                radial-gradient(circle at 8% 32%, rgba(255,46,99,0.45), transparent 24%),
+                linear-gradient(180deg, #320018 0%, #0a1125 48%, #030713 100%);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* 배경 무대 효과 */
+        .stage {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+        .stage::before {
+            content: '';
+            position: absolute;
+            left: -20%; right: -20%; top: 23%;
+            height: 280px;
+            background:
+                radial-gradient(ellipse at center, rgba(255,46,99,0.5), transparent 58%),
+                linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+            transform: perspective(500px) rotateX(64deg);
+            filter: blur(1px);
+        }
+        .lights {
+            position: absolute;
+            left: 0; right: 0; top: 18%;
+            height: 160px;
+            background:
+                radial-gradient(circle at 6% 80%, rgba(255,255,255,0.85) 0 3px, transparent 4px),
+                radial-gradient(circle at 14% 70%, rgba(255,255,255,0.75) 0 3px, transparent 4px),
+                radial-gradient(circle at 22% 62%, rgba(255,255,255,0.7) 0 3px, transparent 4px),
+                radial-gradient(circle at 78% 62%, rgba(255,255,255,0.7) 0 3px, transparent 4px),
+                radial-gradient(circle at 86% 70%, rgba(255,255,255,0.75) 0 3px, transparent 4px),
+                radial-gradient(circle at 94% 80%, rgba(255,255,255,0.85) 0 3px, transparent 4px);
+            opacity: 0.75;
+            animation: blink 2.4s ease-in-out infinite alternate;
+        }
+        @keyframes blink { from { opacity: .4; } to { opacity: .95; } }
+        .ball {
+            position: fixed;
+            left: -35px;
+            top: 33vh;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #fff, #ddd 42%, #111 43% 50%, #f2f2f2 51%);
+            box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+            opacity: .65;
+            animation: ballMove 5.5s ease-in-out infinite alternate;
+            filter: blur(.2px);
+            z-index: 0;
+        }
+        @keyframes ballMove {
+            0% { transform: translateX(0) rotate(0deg) scale(.9); }
+            100% { transform: translateX(34px) translateY(12px) rotate(80deg) scale(1.04); }
+        }
+        .wrap {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 720px;
+            min-height: 100vh;
+            margin: 0 auto;
+            padding: 24px 18px calc(40px + env(safe-area-inset-bottom));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 상단 액션 */
+        .top-actions {
+            align-self: stretch;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .top-link {
+            color: white;
+            text-decoration: none;
+            border: 1px solid rgba(255,46,99,.5);
+            background: rgba(0,0,0,.22);
+            backdrop-filter: blur(12px);
+            border-radius: 999px;
+            padding: 9px 16px;
+            font-weight: 900;
+            font-size: 12px;
+            box-shadow: 0 10px 24px rgba(0,0,0,.18);
+        }
+
+        /* 히어로 */
+        .hero { text-align: center; padding-top: 8px; width: 100%; }
+        .logo-wrap {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 6px auto 14px;
+            animation: logoFloat 3.2s ease-in-out infinite;
+        }
+        .logo-wrap::before {
+            content: '';
+            position: absolute;
+            inset: 14px;
+            border-radius: 46px;
+            background: rgba(255,46,99,.55);
+            filter: blur(28px);
+            animation: glow 2.2s ease-in-out infinite alternate;
+        }
+        .logo {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 44px;
+            filter: drop-shadow(0 24px 34px rgba(0,0,0,.42));
+        }
+        @keyframes logoFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes glow { from { opacity: .45; transform: scale(.92); } to { opacity: 1; transform: scale(1.08); } }
+        .eyebrow { color: rgba(255,255,255,.86); font-size: 14px; font-weight: 700; margin: 4px 0 8px; }
+        h1 {
+            margin: 0;
+            font-size: clamp(36px, 10vw, 64px);
+            line-height: .98;
+            letter-spacing: -3px;
+            font-weight: 1000;
+            text-shadow: 0 8px 24px rgba(0,0,0,.34);
+        }
+        .eng { margin-top: 10px; letter-spacing: 7px; font-size: 12px; font-weight: 800; color: rgba(255,255,255,.85); }
+
+        /* 다가오는 경기 */
+        .matches-section { width: 100%; margin-top: 32px; }
+        .section-title {
+            font-size: 22px;
+            font-weight: 1000;
+            color: white;
+            text-align: center;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
+        }
+        .section-subtitle {
+            font-size: 12px;
+            color: rgba(255,255,255,0.65);
+            text-align: center;
+            margin-bottom: 18px;
+            font-weight: 700;
+        }
+        .section-subtitle b { color: var(--pink); }
+
+        /* 월간 경기 일정 캘린더 (다크 글래스 · 랜딩 테마 일치) */
+        .month-calendar-wrap {
+            background: linear-gradient(180deg, rgba(36,9,32,.7), rgba(7,18,37,.7));
+            border: 1px solid rgba(255,46,99,.4);
+            border-radius: 18px;
+            padding: 14px;
+            margin: 0 0 18px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 12px 32px rgba(0,0,0,.25);
+        }
+        .month-calendar-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+        .month-calendar-title { font-size: 16px; font-weight: 900; color: #fff; letter-spacing: -0.5px; }
+        .month-calendar-sub { margin-top: 2px; font-size: 11px; color: rgba(255,255,255,.55); font-weight: 800; }
+        .month-nav { display: flex; gap: 6px; }
+        .nav-btn {
+            width: 32px; height: 32px; border-radius: 9px; border: 1px solid rgba(255,255,255,.16);
+            background: rgba(255,255,255,.08); color: #fff; font-size: 16px; font-weight: 900;
+            cursor: pointer; font-family: inherit; line-height: 1;
+        }
+        .nav-btn:active { background: rgba(255,255,255,.16); }
+        .month-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .month-weekday { text-align: center; color: rgba(255,255,255,.5); font-size: 10px; font-weight: 900; padding: 2px 0 5px; }
+        .month-day {
+            position: relative; min-height: 50px; border: 1px solid rgba(255,255,255,.09); border-radius: 10px;
+            background: rgba(255,255,255,.04); padding: 6px 5px; text-align: left; font-family: inherit; cursor: default; transition: 0.16s;
+        }
+        .month-day.other { background: rgba(255,255,255,.015); border-color: rgba(255,255,255,.05); }
+        .month-day.today { border-color: var(--pink); box-shadow: inset 0 0 0 1px rgba(255,46,99,.35); }
+        .month-day.has-match { cursor: pointer; background: rgba(255,46,99,.16); border-color: rgba(255,46,99,.55); }
+        .month-day.has-match:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(255,46,99,.28); }
+        .month-day-num { font-size: 12px; font-weight: 900; color: rgba(255,255,255,.82); }
+        .month-day.other .month-day-num { color: rgba(255,255,255,.28); }
+        .month-day.today .month-day-num { color: var(--pink); }
+        .month-match-pill {
+            display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px;
+            margin-top: 6px; padding: 0 6px; border-radius: 999px; background: var(--pink); color: #fff; font-size: 10px; font-weight: 900;
+            box-shadow: 0 2px 8px rgba(255,46,99,.45);
+        }
+        .month-calendar-msg {
+            margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,.05);
+            color: rgba(255,255,255,.6); font-size: 12px; font-weight: 800; line-height: 1.45;
+        }
+        .match-more-note {
+            margin-top: 14px; text-align: center; font-size: 12px; font-weight: 800;
+            color: rgba(255,255,255,0.72); background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px;
+        }
+        .match-more-note b { color: var(--pink); }
+
+        .match-list { display: flex; flex-direction: column; gap: 12px; }
+        .match-card {
+            background: linear-gradient(180deg, rgba(36,9,32,.7), rgba(7,18,37,.7));
+            border: 1px solid rgba(255,46,99,.4);
+            border-radius: 18px;
+            padding: 16px 18px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 12px 32px rgba(0,0,0,.25);
+            transition: 0.2s;
+        }
+        .match-card:hover { transform: translateY(-2px); border-color: rgba(255,46,99,.7); }
+        .match-date { font-size: 12px; font-weight: 900; color: var(--pink); margin-bottom: 4px; letter-spacing: 0.3px; }
+        .match-name { font-size: 18px; font-weight: 900; color: white; margin-bottom: 4px; letter-spacing: -0.3px; }
+        .match-address { font-size: 11px; color: rgba(255,255,255,0.55); font-weight: 600; margin-bottom: 10px; }
+        .match-info {
+            background: rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.75);
+            margin-bottom: 10px;
+        }
+        .match-info b { color: white; font-weight: 900; }
+        .match-info .fill { color: var(--pink); font-weight: 900; }
+        .match-apply-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #ff2e63, #ff1454);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 1000;
+            font-size: 14px;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 8px 20px rgba(255,46,99,.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .match-apply-btn:active { transform: scale(0.98); }
+        .match-apply-btn:disabled {
+            background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.4);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .member-page-link {
+            width: 100%;
+            min-height: 46px;
+            margin-top: 9px;
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.9);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 900;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-sizing: border-box;
+            transition: 0.18s;
+        }
+        .member-page-link:active { transform: scale(0.98); }
+        .match-empty {
+            background: linear-gradient(180deg, rgba(36,9,32,.55), rgba(7,18,37,.55));
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 18px;
+            padding: 32px 20px;
+            text-align: center;
+            color: rgba(255,255,255,0.6);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        /* 기능 카드 */
+        .features { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; margin: 32px 0 22px; }
+        .feature { text-align: center; color: white; font-size: 11px; font-weight: 800; }
+        .feature .ico {
+            width: 54px; height: 54px;
+            margin: 0 auto 6px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+            border: 1px solid rgba(255,46,99,.65);
+            color: var(--pink);
+            background: rgba(0,0,0,.18);
+            font-size: 24px;
+            box-shadow: inset 0 0 22px rgba(255,46,99,.12);
+        }
+
+        /* CTA 카드 */
+        .cta-card {
+            width: 100%;
+            border: 1px solid rgba(255,46,99,.55);
+            background: linear-gradient(180deg, rgba(36,9,32,.72), rgba(7,18,37,.72));
+            border-radius: 22px;
+            padding: 24px 18px;
+            box-shadow: 0 24px 60px rgba(0,0,0,.28);
+            backdrop-filter: blur(16px);
+            margin-top: 8px;
+        }
+        .cta-card h2 {
+            margin: 0 0 10px;
+            font-size: 26px;
+            letter-spacing: -1px;
+            text-align: center;
+            font-weight: 1000;
+        }
+        .cta-card h2 .gold {
+            background: linear-gradient(135deg, #ffd700, #f59e0b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .cta-card p { margin: 0 0 18px; text-align: center; color: rgba(255,255,255,.82); line-height: 1.6; font-size: 14px; }
+        .cta-card p b { color: var(--pink); }
+        .mini-benefits { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 18px 0; }
+        .mini-benefit { text-align: center; font-size: 11px; color: rgba(255,255,255,.82); font-weight: 800; }
+        .mini-benefit span {
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 7px;
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            background: rgba(255,46,99,.08);
+            border: 1px solid rgba(255,46,99,.38);
+            color: var(--pink);
+            font-size: 20px;
+        }
+        .btn-cta {
+            width: 100%;
+            border: none;
+            border-radius: 17px;
+            padding: 17px 16px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: 1000;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: white;
+            background: linear-gradient(135deg, #ff2e63, #ff1454);
+            box-shadow: 0 14px 28px rgba(255,46,99,.35);
+        }
+
+        /* ✨ 하단 앱 설치 CTA */
+        .install-cta-card {
+            width: 100%;
+            border: 1px solid rgba(255,46,99,.45);
+            background: linear-gradient(135deg, rgba(255,46,99,.22), rgba(7,18,37,.78));
+            border-radius: 22px;
+            padding: 22px 18px;
+            box-shadow: 0 20px 50px rgba(0,0,0,.24);
+            backdrop-filter: blur(16px);
+            margin-top: 16px;
+            text-align: center;
+        }
+        .install-cta-card h2 {
+            margin: 0 0 8px;
+            font-size: 22px;
+            font-weight: 1000;
+            letter-spacing: -0.8px;
+        }
+        .install-cta-card p {
+            margin: 0 0 16px;
+            color: rgba(255,255,255,.78);
+            font-size: 13px;
+            line-height: 1.55;
+            font-weight: 700;
+        }
+        .btn-install-cta {
+            width: 100%;
+            border: none;
+            border-radius: 17px;
+            padding: 16px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 1000;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: white;
+            background: linear-gradient(135deg, #ff2e63, #ff1454);
+            box-shadow: 0 14px 28px rgba(255,46,99,.35);
+        }
+
+        /* ✨ 비회원 카카오페이 / 입금 안내 */
+        .guest-payment-wrap {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 16px;
+            width: 100%;
+            animation: fadeUp 0.25s ease;
+        }
+        .guest-payment-wrap.show { display: flex; }
+        .guest-paid-card {
+            position: relative;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            padding: 15px 16px;
+            border-radius: 14px;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.22);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .guest-paid-row {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+        .guest-paid-icon {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 900;
+            color: white;
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            flex-shrink: 0;
+        }
+        .guest-paid-text { flex: 1; min-width: 0; }
+        .guest-paid-text .main { font-size: 14px; font-weight: 900; color: white; }
+        .guest-paid-text .sub { font-size: 10px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+        .guest-paid-badge {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 800;
+            background: rgba(245,158,11,0.18);
+            border: 1px solid rgba(245,158,11,0.4);
+            color: #fbbf24;
+            flex-shrink: 0;
+        }
+        .guest-kakao-btn {
+            width: 100%;
+            background: #FEE500;
+            color: #3c1e1e;
+            border: none;
+            padding: 14px 16px;
+            border-radius: 14px;
+            font-weight: 900;
+            font-size: 15px;
+            cursor: pointer;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 6px 14px rgba(254,229,0,0.28);
+            text-decoration: none;
+            box-sizing: border-box;
+        }
+        .guest-bank-info {
+            background: #fbfdff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 12px 14px;
+            font-size: 12px;
+            color: #1e293b;
+        }
+        .guest-bank-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 3px 0;
+            line-height: 1.5;
+        }
+        .guest-bank-row + .guest-bank-row {
+            border-top: 1px dashed #e2e8f0;
+            margin-top: 4px;
+            padding-top: 7px;
+        }
+        .guest-bank-label {
+            color: #64748b;
+            font-weight: 700;
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+        .guest-bank-account {
+            color: #1e293b;
+            font-weight: 900;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            user-select: all;
+            overflow-wrap: anywhere;
+        }
+        .guest-copy-hint {
+            font-size: 9px;
+            font-weight: 700;
+            color: #64748b;
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+        .guest-payment-notice {
+            background: #fff8e1;
+            color: #8b6914;
+            border-left: 3px solid #ffc107;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            line-height: 1.5;
+        }
+        .guest-paid-btn {
+            width: 100%;
+            background: white;
+            border: 2px solid #22c55e;
+            color: #16a34a;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+        .guest-paid-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+
+
+        /* ============================================
+           ✅ 2026-05 업데이트: 버튼 통일 / 경기 이미지 슬라이드 / 비회원 신청 확인
+           ============================================ */
+        .btn-unified,
+        .match-apply-btn,
+        .btn-cta,
+        .btn-install-cta,
+        .guest-kakao-btn,
+        .guest-paid-btn,
+        .submit-btn,
+        .lookup-btn,
+        .status-action-btn {
+            width: 100%;
+            min-height: 52px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            text-align: center;
+            text-decoration: none;
+            box-sizing: border-box;
+        }
+        .top-link {
+            min-height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 9px 16px;
+            box-sizing: border-box;
+        }
+        .match-card { padding: 0; overflow: hidden; }
+        .match-card-body { padding: 15px 18px 16px; }
+
+        .match-slider {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            min-height: 168px;
+            overflow: hidden;
+            background: #071225;
+            border-bottom: 1px solid rgba(255,46,99,.25);
+            isolation: isolate;
+        }
+        .match-slider-track {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        .match-slide {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: scale(1.08);
+            animation: ltuFadeZoom 30s infinite ease-in-out;
+            will-change: opacity, transform;
+        }
+        .match-slide:nth-child(1) { animation-delay: 0s; }
+        .match-slide:nth-child(2) { animation-delay: 6s; }
+        .match-slide:nth-child(3) { animation-delay: 12s; }
+        .match-slide:nth-child(4) { animation-delay: 18s; }
+        .match-slide:nth-child(5) { animation-delay: 24s; }
+        .match-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            background: #050b18;
+        }
+        .match-slider::before {
+            content: '';
+            position: absolute;
+            inset: -20%;
+            z-index: 1;
+            pointer-events: none;
+            background: radial-gradient(circle at 50% 40%, rgba(255,46,99,.18), transparent 36%);
+            opacity: .55;
+            mix-blend-mode: screen;
+        }
+        .match-slider::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            background:
+                linear-gradient(180deg, rgba(0,0,0,.10) 0%, transparent 42%, rgba(7,18,37,.86) 100%),
+                linear-gradient(90deg, rgba(7,18,37,.28), transparent 48%, rgba(255,46,99,.15));
+            pointer-events: none;
+        }
+        .slider-badge {
+            position: absolute;
+            left: 12px;
+            bottom: 12px;
+            z-index: 3;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0,0,0,.36);
+            border: 1px solid rgba(255,255,255,.16);
+            backdrop-filter: blur(10px);
+            color: white;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: 900;
+        }
+        .slider-dots {
+            position: absolute;
+            right: 12px;
+            bottom: 16px;
+            z-index: 3;
+            display: flex;
+            gap: 5px;
+        }
+        .slider-dots span {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.55);
+            animation: dotPulse 30s infinite ease-in-out;
+        }
+        .slider-dots span:nth-child(1) { animation-delay: 0s; }
+        .slider-dots span:nth-child(2) { animation-delay: 6s; }
+        .slider-dots span:nth-child(3) { animation-delay: 12s; }
+        .slider-dots span:nth-child(4) { animation-delay: 18s; }
+        .slider-dots span:nth-child(5) { animation-delay: 24s; }
+        @keyframes dotPulse {
+            0%, 20% { background: var(--pink); transform: scale(1.55); box-shadow: 0 0 10px rgba(255,46,99,.72); }
+            21%, 100% { background: rgba(255,255,255,.55); transform: scale(1); box-shadow: none; }
+        }
+        @keyframes ltuFadeZoom {
+            0% { opacity: 0; transform: scale(1.08); }
+            4% { opacity: 1; transform: scale(1.055); }
+            18% { opacity: 1; transform: scale(1.015); }
+            22% { opacity: 0; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.08); }
+        }
+        .restore-card {
+            width: 100%;
+            margin-top: 20px;
+            padding: 16px;
+            display: none;
+            border-radius: 20px;
+            border: 1px solid rgba(255,46,99,.42);
+            background: linear-gradient(135deg, rgba(255,46,99,.18), rgba(7,18,37,.76));
+            box-shadow: 0 18px 42px rgba(0,0,0,.22);
+            backdrop-filter: blur(16px);
+        }
+        .restore-card.show { display: block; animation: fadeUp .25s ease; }
+        .restore-title { font-size: 15px; font-weight: 1000; margin-bottom: 4px; }
+        .restore-sub { font-size: 12px; color: rgba(255,255,255,.66); font-weight: 700; line-height: 1.5; margin-bottom: 12px; }
+        .restore-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn-dark-unified { background: #1e293b; color: white; border: 1px solid rgba(255,255,255,.12); }
+        .btn-pink-unified { background: linear-gradient(135deg, #ff2e63, #ff1454); color: white; border: none; box-shadow: 0 10px 24px rgba(255,46,99,.3); }
+        .lookup-modal-card { max-width: 430px; }
+        .lookup-help { font-size: 12px; color: rgba(255,255,255,.64); line-height: 1.6; margin: -4px 0 16px; }
+        .status-box {
+            display: none;
+            margin-top: 16px;
+            background: rgba(255,255,255,.08);
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 16px;
+            padding: 14px;
+        }
+        .status-box.show { display: block; }
+        .status-line { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px dashed rgba(255,255,255,.1); font-size: 13px; }
+        .status-line:last-child { border-bottom: none; }
+        .status-line span { color: rgba(255,255,255,.58); font-weight: 700; }
+        .status-line b { color: white; font-weight: 1000; text-align: right; }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 1000;
+        }
+        .status-badge.pending { background: #fee2e2; color: #991b1b; }
+        .status-badge.requested { background: #fef3c7; color: #92400e; }
+        .status-badge.confirmed { background: #dcfce7; color: #166534; }
+        .status-badge.approved { background: #dcfce7; color: #166534; }
+        .status-badge.rejected { background: #fee2e2; color: #991b1b; }
+        .status-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+        .status-link-box {
+            margin-top: 10px;
+            background: rgba(0,0,0,.2);
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 12px;
+            padding: 10px;
+            color: rgba(255,255,255,.72);
+            font-size: 11px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+        .share-link-btn {
+            margin-top: 8px;
+            min-height: 42px;
+            font-size: 12px;
+            border-radius: 10px;
+            background: rgba(255,255,255,.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,.12);
+            cursor: pointer;
+        }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+        @media (max-width: 480px) {
+            .restore-actions { grid-template-columns: 1fr; }
+            .match-slider { min-height: 155px; }
+            .btn-unified,
+            .match-apply-btn,
+            .btn-cta,
+            .btn-install-cta,
+            .guest-kakao-btn,
+            .guest-paid-btn,
+            .submit-btn,
+            .lookup-btn,
+            .status-action-btn { min-height: 50px; font-size: 14px; }
+        }
+
+
+        /* ✅ 카카오 비즈니스 채널 심사용 운영사 증빙 영역 */
+        .business-proof-card {
+            width: 100%;
+            margin-top: 18px;
+            border: 1px solid rgba(255,255,255,.16);
+            background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.18));
+            border-radius: 18px;
+            padding: 18px 16px;
+            box-shadow: 0 18px 44px rgba(0,0,0,.22);
+            backdrop-filter: blur(16px);
+        }
+        .business-proof-card h2 {
+            margin: 0 0 8px;
+            font-size: 17px;
+            font-weight: 1000;
+            letter-spacing: -0.5px;
+            color: #fff;
+            text-align: center;
+        }
+        .business-proof-card .proof-desc {
+            margin: 0 0 14px;
+            color: rgba(255,255,255,.78);
+            font-size: 12px;
+            line-height: 1.55;
+            font-weight: 700;
+            text-align: center;
+        }
+        .business-proof-card .proof-desc b { color: #fff; }
+        .business-proof-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        .business-proof-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: rgba(0,0,0,.2);
+            border: 1px solid rgba(255,255,255,.08);
+            font-size: 12px;
+            line-height: 1.45;
+        }
+        .business-proof-row span {
+            color: rgba(255,255,255,.58);
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+        .business-proof-row b {
+            color: white;
+            font-weight: 900;
+            text-align: right;
+            word-break: keep-all;
+        }
+        .business-proof-note {
+            margin-top: 10px;
+            color: rgba(255,255,255,.5);
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1.5;
+            text-align: center;
+        }
+        /* 📜 이용약관 · 개인정보처리방침 · 환불 규정 */
+        .policy-wrap { width: 100%; margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .policy-sec { border: 1px solid rgba(255,255,255,.14); background: rgba(0,0,0,.2); border-radius: 14px; overflow: hidden; scroll-margin-top: 16px; }
+        .policy-sec > summary { list-style: none; cursor: pointer; padding: 13px 16px; font-size: 13px; font-weight: 900; color: #fff; display: flex; align-items: center; justify-content: space-between; -webkit-tap-highlight-color: transparent; }
+        .policy-sec > summary::-webkit-details-marker { display: none; }
+        .policy-chev { width: 18px; height: 18px; color: rgba(255,255,255,.55); transition: transform .2s; flex-shrink: 0; }
+        .policy-sec[open] .policy-chev { transform: rotate(180deg); }
+        .policy-body { padding: 0 16px 16px; color: rgba(255,255,255,.78); font-size: 12px; line-height: 1.65; font-weight: 600; }
+        .policy-body h4 { color: #fff; font-size: 12.5px; font-weight: 900; margin: 14px 0 4px; }
+        .policy-body p { margin: 4px 0; }
+        .policy-body ul { margin: 4px 0; padding-left: 18px; }
+        .policy-body li { margin: 2px 0; }
+        .policy-body table { width: 100%; border-collapse: collapse; margin: 6px 0; }
+        .policy-body td { border: 1px solid rgba(255,255,255,.14); padding: 6px 8px; vertical-align: top; }
+        .policy-body td:first-child { color: rgba(255,255,255,.6); width: 40%; }
+        .policy-body .policy-date { margin-top: 14px; font-size: 11px; color: rgba(255,255,255,.5); text-align: center; }
+        /* 💡 입금 안내 옆 환불 요약 */
+        .refund-mini { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); }
+        .refund-mini-title { font-size: 11px; font-weight: 900; color: #fff; margin-bottom: 6px; }
+        .refund-mini-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; text-align: center; font-size: 10px; font-weight: 700; color: rgba(255,255,255,.65); }
+        .refund-mini-grid div { background: rgba(0,0,0,.2); border-radius: 6px; padding: 5px 2px; }
+        .refund-mini-grid b { display: block; font-size: 12px; color: #fff; }
+        .refund-mini-grid .no b { color: #ff6b8a; }
+        .refund-mini-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 6px; font-size: 10px; color: rgba(255,255,255,.55); font-weight: 700; }
+        .refund-mini-foot a { color: #fbbf24; text-decoration: underline; cursor: pointer; white-space: nowrap; }
+        .refund-mini.light { background: #f8fafc; border-color: #e5e7eb; }
+        .refund-mini.light .refund-mini-title { color: #111827; }
+        .refund-mini.light .refund-mini-grid { color: #64748b; }
+        .refund-mini.light .refund-mini-grid div { background: #fff; border: 1px solid #e5e7eb; }
+        .refund-mini.light .refund-mini-grid b { color: #111827; }
+        .refund-mini.light .refund-mini-grid .no b { color: #ef4444; }
+        .refund-mini.light .refund-mini-foot { color: #64748b; }
+        .refund-mini.light .refund-mini-foot a { color: #2563eb; }
+        @media (max-width: 480px) {
+            .business-proof-card { border-radius: 16px; padding: 16px 14px; }
+            .business-proof-row { font-size: 11px; gap: 8px; padding: 9px 10px; }
+            .business-proof-row b { word-break: break-word; }
+        }
+
+
+        footer { margin-top: 30px; text-align: center; color: rgba(255,255,255,.4); font-size: 11px; letter-spacing: 1px; font-weight: 600; }
+
+        /* 모달 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-card {
+            background: linear-gradient(180deg, #1a0a1f 0%, #0a1125 100%);
+            border: 1px solid rgba(255,46,99,.4);
+            border-radius: 24px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 30px 80px rgba(255,46,99,0.2);
+            color: white;
+        }
+        @keyframes modalPop {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .modal-header h3 { font-size: 18px; font-weight: 1000; margin: 0; letter-spacing: -0.3px; }
+        .modal-close {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            color: white;
+            font-weight: 800;
+        }
+        .modal-match-info {
+            background: rgba(255,46,99,0.1);
+            border-left: 3px solid var(--pink);
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+        }
+        .modal-match-info .name { font-weight: 900; color: white; margin-bottom: 4px; font-size: 15px; }
+        .modal-match-info .date { font-size: 12px; color: var(--pink); font-weight: 800; }
+        .modal-match-info .price-info { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 4px; font-weight: 600; }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+        }
+        .form-group label .req { color: var(--pink); }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            background: rgba(0,0,0,0.3);
+            color: white;
+            transition: 0.2s;
+        }
+        .form-group input::placeholder, .form-group textarea::placeholder { color: rgba(255,255,255,0.3); }
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--pink);
+            background: rgba(255,46,99,0.08);
+        }
+        .form-group textarea { resize: vertical; min-height: 60px; }
+        .gender-row { display: flex; gap: 8px; }
+        .gender-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1.5px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            background: rgba(0,0,0,0.3);
+            color: white;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+        .gender-btn.active {
+            border-color: var(--pink);
+            background: var(--pink);
+            color: white;
+            box-shadow: 0 4px 12px rgba(255,46,99,0.3);
+        }
+        
+        /* ✨ 실력 select 드롭다운 */
+        .skill-select {
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path fill="%23ff2e63" d="M2 4l4 4 4-4z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 38px !important;
+            cursor: pointer;
+            font-weight: 700;
+        }
+        .skill-select option {
+            background: #1a0a1f;
+            color: white;
+            padding: 8px;
+        }
+        
+        /* ✨ 실력 등급 가이드 */
+        .skill-guide {
+            background: rgba(255,46,99,0.08);
+            border: 1px solid rgba(255,46,99,0.3);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-top: 8px;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+        .skill-guide-title {
+            font-weight: 900;
+            color: var(--pink);
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+        .skill-guide-list {
+            color: rgba(255,255,255,0.85);
+        }
+        .skill-guide-list > div {
+            margin-bottom: 3px;
+        }
+        .skill-guide-list b {
+            color: white;
+            font-weight: 800;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #ff2e63, #ff1454);
+            color: white;
+            padding: 14px;
+            border-radius: 14px;
+            font-weight: 1000;
+            font-size: 15px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            margin-top: 8px;
+            box-shadow: 0 8px 20px rgba(255,46,99,0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .submit-btn:active:not(:disabled) { transform: scale(0.98); }
+
+        .info-notice {
+            background: rgba(255,193,7,0.1);
+            color: #fbbf24;
+            border-left: 3px solid #fbbf24;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 14px;
+            line-height: 1.5;
+        }
+
+        .toast {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 14px;
+            font-weight: 900;
+            font-size: 14px;
+            z-index: 9999;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            white-space: pre-line;
+            text-align: center;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        @media (max-width: 480px) {
+            .logo-wrap { width: 160px; height: 160px; }
+            h1 { font-size: 38px; letter-spacing: -2px; }
+            .features { gap: 8px; }
+            .feature .ico { width: 50px; height: 50px; font-size: 22px; }
+            .feature { font-size: 10px; }
+            .cta-card h2 { font-size: 22px; }
+        }
+
+        /* ✅ 관리자 이미지 관리 버튼 (카드 우측 하단) */
+        .slider-admin-btn {
+            position: absolute;
+            right: 10px;
+            bottom: 40px;
+            z-index: 4;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,.25);
+            background: rgba(0,0,0,.45);
+            color: #fff;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(6px);
+            box-shadow: 0 4px 12px rgba(0,0,0,.3);
+            transition: 0.15s;
+        }
+        .slider-admin-btn:active { transform: scale(0.92); }
+
+        /* 관리자 이미지 관리 모달 내부 */
+        .slide-admin-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+        .slide-admin-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 12px;
+            padding: 8px;
+        }
+        .slide-admin-item img { width: 64px; height: 40px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: #071225; }
+        .slide-admin-item .idx { font-size: 11px; color: rgba(255,255,255,.5); width: 18px; text-align: center; flex-shrink: 0; }
+        .slide-admin-actions { margin-left: auto; display: flex; gap: 6px; flex-shrink: 0; }
+        .slide-admin-actions button {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,.15);
+            background: rgba(0,0,0,.3);
+            color: #fff;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .slide-admin-actions button:disabled { opacity: .35; cursor: not-allowed; }
+        .slide-add-btn {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            width: 100%; min-height: 50px;
+            border-radius: 12px;
+            border: 1px dashed rgba(255,46,99,.55);
+            background: rgba(255,46,99,.08);
+            color: #fff; font-weight: 900; font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+<script src="app-update.js" defer></script></head>
+<body>
+
+<div class="stage"><div class="lights"></div></div>
+<div class="ball"></div>
+
+<main class="wrap">
+    <div class="top-actions">
+        <a href="board.html" class="top-link">📣 공지사항</a>
+        <a href="login.html" class="top-link">🔑 로그인</a>
+    </div>
+
+    <section class="hero">
+        <div class="logo-wrap">
+            <img src="ltu_logo.png" alt="막차 유나이티드 로고" class="logo">
+        </div>
+        <div class="eyebrow">우리의 마지막 열차, 최고의 팀워크로 승리로!</div>
+        <h1>막차 유나이티드</h1>
+        <div class="eng">LAST TRAIN UNITED</div>
+    </section>
+
+    <section class="restore-card" id="restoreCard">
+        <div class="restore-title">👀 최근 신청 내역이 있어요</div>
+        <div class="restore-sub">카카오톡 브라우저에 저장된 신청 정보를 기준으로 바로 확인할 수 있어요.</div>
+        <div class="restore-actions">
+            <button class="btn-unified btn-pink-unified" type="button" onclick="window.restoreRecentGuest()">내 신청 확인하기</button>
+            <button class="btn-unified btn-dark-unified" type="button" onclick="window.openLookupModal()">전화번호로 조회</button>
+        </div>
+    </section>
+
+    <section class="matches-section">
+        <div class="section-title">📅 다가오는 경기</div>
+        <div class="section-subtitle"><b>비회원</b>도 일회성 참여 가능!</div>
+
+        <!-- 월간 경기 일정 (전체 일정 한눈에) -->
+        <div class="month-calendar-wrap">
+            <div class="month-calendar-head">
+                <div>
+                    <div class="month-calendar-title" id="monthCalendarTitle">월간 경기 일정</div>
+                    <div class="month-calendar-sub">한 달 경기 일정을 한눈에 확인하세요</div>
+                </div>
+                <div class="month-nav">
+                    <button class="nav-btn" type="button" onclick="window.monthCalendarPrev()">‹</button>
+                    <button class="nav-btn" type="button" onclick="window.monthCalendarNext()">›</button>
+                </div>
+            </div>
+            <div class="month-grid" id="monthCalendarGrid"></div>
+            <div class="month-calendar-msg" id="monthCalendarMsg">경기 있는 날짜를 누르면 신청 창이 열립니다.</div>
+        </div>
+
+        <div class="match-list" id="matchList">
+            <div class="match-empty">⏳ 경기 일정을 불러오는 중...</div>
+        </div>
+        <div id="matchMoreNote"></div>
+    </section>
+
+    <section class="features" aria-label="주요 기능">
+        <div class="feature"><div class="ico">👥</div>팀원과 함께</div>
+        <div class="feature"><div class="ico">📅</div>경기를 만들고</div>
+        <div class="feature"><div class="ico">📈</div>실력을 키우고</div>
+        <div class="feature"><div class="ico">🏆</div>승리를 향해!</div>
+    </section>
+
+
+    <section class="install-cta-card">
+        <h2>📲 막차유 앱처럼 사용하기</h2>
+        <p>홈화면에 추가하면 경기 확인, 참여 신청, 공지 확인을 더 빠르게 이용할 수 있어요.</p>
+        <a href="intro.html" class="btn-install-cta">🚂 막차유 앱 설치 안내 보기 ❯</a>
+    </section>
+
+
+    <section class="business-proof-card" id="policy-info" aria-label="운영사 정보">
+        <h2>✅ 공식 운영 정보</h2>
+        <p class="proof-desc"><b>막차유(LTUnited)</b>는 <b>막차유나이티드</b>에서 운영하는 인천 풋살/축구 모임 플랫폼입니다.</p>
+        <div class="business-proof-grid">
+            <div class="business-proof-row"><span>운영사</span><b>막차유나이티드</b></div>
+            <div class="business-proof-row"><span>대표자</span><b>박시은</b></div>
+            <div class="business-proof-row"><span>사업자등록번호</span><b>672-15-02883</b></div>
+            <div class="business-proof-row"><span>통신판매업</span><b>간이과세자 신고 면제</b></div>
+            <div class="business-proof-row"><span>사업장 주소</span><b>인천광역시 부평구 주부토로 75번길 20-3 503호(부평동, 플러스빌)</b></div>
+            <div class="business-proof-row"><span>전화</span><b><a href="tel:01043295658" style="color:inherit;text-decoration:none;">010-4329-5658</a></b></div>
+            <div class="business-proof-row"><span>업태</span><b>예술, 스포츠 및 여가 관련 서비스업</b></div>
+            <div class="business-proof-row"><span>종목</span><b>스포츠 서비스업</b></div>
+            <div class="business-proof-row"><span>부 종목</span><b>전자상거래업</b></div>
+            <div class="business-proof-row"><span>서비스</span><b>막차유(LTUnited) 공식 운영 채널</b></div>
+            <div class="business-proof-row"><span>이메일</span><b>shesilver11@naver.com</b></div>
+            <div class="business-proof-row"><span>개인정보 보호책임자</span><b>육현명</b></div>
+        </div>
+        <div class="business-proof-note">카카오 비즈니스 채널 심사 시 사업자와 서비스 운영 연관성 확인을 위한 공식 운영 정보입니다.</div>
+    </section>
+
+    <!-- 📜 이용약관 · 개인정보처리방침 · 환불 규정 (로그인 없이 공개 · 접고 펼치기) -->
+    <div class="policy-wrap">
+    <details class="policy-sec" id="policy-terms">
+        <summary>이용약관<svg class="policy-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="policy-body">
+<h4>제1조 (목적)</h4>
+            <p>본 규정은 막차유나이티드에서 운영하는 막차 유나이티드(이하 "클럽")의 가입 회원과 클럽 간의 권리·의무 및 책임사항, 회원 자격 및 서비스 이용 절차에 관한 사항을 규정함을 목적으로 합니다.</p>
+
+            <h4>제2조 (운영 주체)</h4>
+            <p>막차유(LTUnited)는 막차유나이티드에서 운영하는 풋살/축구 모임 플랫폼입니다.</p>
+            <ul>
+                <li>운영사: 막차유나이티드</li>
+                <li>대표자: 박시은</li>
+                <li>사업자등록번호: 672-15-02883</li>
+                <li>업태: 예술, 스포츠 및 여가 관련 서비스업</li>
+                <li>종목: 스포츠 서비스업 / 전자상거래업</li>
+                <li>사업 분야: 전자상거래업</li>
+                <li>문의: shesilver11@naver.com</li>
+            </ul>
+
+            <h4>제3조 (회원의 정의)</h4>
+            <ul>
+                <li>"회원"이란 본 규정에 동의하고 가입 절차를 완료한 자를 말합니다.</li>
+                <li>"아이디(ID)"란 회원 식별과 서비스 이용을 위해 회원이 선정하고 클럽이 승인한 문자/숫자의 조합을 말합니다.</li>
+                <li>"비밀번호"란 회원의 정보 보호를 위해 회원 자신이 정한 문자/숫자의 조합을 말합니다.</li>
+            </ul>
+
+            <h4>제4조 (개인정보 수집 및 이용)</h4>
+            <p>막차유나이티드는 회원가입 및 경기 신청 시 다음의 개인정보를 수집하며, 수집된 정보는 회원 식별, 활동 관리, 매칭 서비스 제공, 공지 및 알림톡 발송, 상점 주문/배송 관리의 목적으로만 이용됩니다.</p>
+            <ul>
+                <li>필수 항목: 아이디, 비밀번호, 이름, 연락처, 생년월일, 성별</li>
+                <li>선택 항목: 프로필 사진, 선호 포지션, 활동 능력</li>
+                <li>알림 발송 항목: 이름, 연락처, 경기 신청/결제/주문 상태</li>
+                <li>보유 기간: 회원 탈퇴 시까지 (관계 법령에 따른 보존 의무가 있는 경우 해당 기간)</li>
+            </ul>
+
+            <h4>제5조 (회원의 의무)</h4>
+            <ul>
+                <li>회원은 가입 시 사실에 근거한 정보를 제공해야 하며, 허위 정보 등록 시 회원 자격이 박탈될 수 있습니다.</li>
+                <li>회원은 본인의 아이디 및 비밀번호 관리에 대한 책임을 지며, 제3자에게 양도하거나 대여할 수 없습니다.</li>
+                <li>회원은 클럽 활동 시 안전 수칙 및 매너를 준수해야 하며, 다른 회원에게 피해를 주는 행위를 해서는 안 됩니다.</li>
+                <li>회원은 폭력, 욕설, 차별, 도박, 음주 후 경기 참여 등 클럽의 명예를 훼손하는 행위를 해서는 안 됩니다.</li>
+            </ul>
+
+            <h4>제6조 (전자상거래 및 결제)</h4>
+            <ul>
+                <li>회원은 클럽이 제공하는 매칭 서비스 이용 시 정해진 참가비를 납부해야 합니다.</li>
+                <li>참가 신청 후 취소 및 환불은 환불 규정(매치 3일 전 100% · 2일 전 50% · 1일 전 20% · 당일·무단 불참 환불 불가)에 따릅니다. 최소 인원 미달·우천 등으로 경기가 취소되면 매치 시작 1시간 30분 전까지 취소 시 참가비 전액을 환급합니다.</li>
+                <li>경기 당일 무단 불참 시 추후 매칭 신청에 제한이 있을 수 있습니다.</li>
+                <li>쿠폰, 보상 등은 정해진 유효기간 내에서만 사용 가능하며, 현금으로 환급되지 않습니다.</li>
+            </ul>
+
+            <h4>제7조 (서비스 이용 제한)</h4>
+            <p>다음에 해당하는 경우 클럽은 회원의 서비스 이용을 제한하거나 자격을 박탈할 수 있습니다.</p>
+            <ul>
+                <li>타인의 명의를 도용하여 가입한 경우</li>
+                <li>클럽 운영을 고의로 방해하는 행위를 한 경우</li>
+                <li>회원 간 분쟁을 야기하거나 클럽 분위기를 해치는 경우</li>
+                <li>3회 이상의 무단 불참 또는 매너 점수 누적 하락 시</li>
+            </ul>
+
+            <h4>제8조 (회원 탈퇴)</h4>
+            <ul>
+                <li>회원은 언제든지 탈퇴를 요청할 수 있으며, 클럽은 즉시 처리합니다.</li>
+                <li>탈퇴 시 누적된 활동지수, 보유 쿠폰, 평가 기록 등은 모두 소멸되며 복구되지 않습니다.</li>
+            </ul>
+
+            <h4>제9조 (책임의 한계)</h4>
+            <ul>
+                <li>클럽은 천재지변, 불가항력적 사유로 인한 서비스 중단에 대해 책임을 지지 않습니다.</li>
+                <li>경기 중 발생하는 부상은 1차적으로 회원 본인의 책임이며, 클럽은 안전 관리에 최선을 다합니다.</li>
+                <li>회원 간 분쟁이나 거래에 클럽은 개입하지 않으며, 그로 인한 손해에 대해 책임지지 않습니다.</li>
+            </ul>
+
+            <h4>제10조 (규정의 개정)</h4>
+            <p>본 규정은 관련 법령 및 클럽 정책 변경 시 개정될 수 있으며, 개정 시 클럽 공지사항을 통해 사전 공지합니다.</p>
+<p class="policy-date">시행일: 2026년 10월 13일</p>
+        </div>
+    </details>
+    <details class="policy-sec" id="policy-privacy">
+        <summary>개인정보처리방침<svg class="policy-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="policy-body">
+<h4>1. 수집하는 개인정보 항목</h4>
+<ul>
+<li>회원가입(필수): 아이디, 비밀번호, 이름, 연락처, 생년월일, 성별</li>
+<li>회원가입(선택): 프로필 사진, 선호 포지션, 활동 능력</li>
+<li>비회원 경기 신청: 이름, 연락처</li>
+<li>환불: 환불 계좌(은행, 계좌번호, 예금주)</li>
+<li>결제: 결제 정보는 결제대행사가 처리하며, 막차유나이티드는 카드번호 등 결제수단 정보를 저장하지 않습니다.</li>
+</ul>
+<h4>2. 개인정보의 이용 목적</h4>
+<p>회원 식별 및 관리, 경기 참여·매칭 관리, 참가비·이용권 결제 및 환불, 공지 및 카카오 알림톡 발송, 상점 주문·배송 처리</p>
+<h4>3. 보유 및 이용 기간</h4>
+<p>회원 탈퇴 시 지체 없이 파기합니다. 단, 관계 법령에 따라 다음 기록은 정해진 기간 동안 보관합니다.</p>
+<ul>
+<li>계약 또는 청약철회 등에 관한 기록: 5년 (전자상거래법)</li>
+<li>대금결제 및 재화 등의 공급에 관한 기록: 5년 (전자상거래법)</li>
+<li>소비자의 불만 또는 분쟁처리에 관한 기록: 3년 (전자상거래법)</li>
+</ul>
+<h4>4. 개인정보 처리 위탁 및 국외 이전</h4>
+<table>
+<tr><td>Google LLC (Firebase)</td><td>회원·경기 데이터 저장 및 관리 · 미국 소재 서버로 네트워크를 통해 전송·보관</td></tr>
+<tr><td>SOLAPI</td><td>카카오 알림톡 및 문자 발송</td></tr>
+<tr><td>닷홈</td><td>웹사이트 호스팅</td></tr>
+<tr><td>토스페이먼츠</td><td>결제 처리 (결제 서비스 연동 시)</td></tr>
+</table>
+<h4>5. 개인정보의 파기 절차 및 방법</h4>
+<p>보유 기간이 끝나거나 처리 목적이 달성된 개인정보는 지체 없이 파기하며, 전자 파일은 복구할 수 없는 방법으로 삭제합니다.</p>
+<h4>6. 이용자의 권리와 행사 방법</h4>
+<p>이용자는 언제든지 자신의 개인정보 열람·정정·삭제·처리 정지를 요청할 수 있으며, 아래 개인정보 보호책임자에게 연락하시면 지체 없이 조치합니다.</p>
+<h4>7. 개인정보 보호책임자</h4>
+<p>육현명 · 010-4329-5658 · shesilver11@naver.com</p>
+<p class="policy-date">시행일: 2026년 10월 13일</p>
+        </div>
+    </details>
+    <details class="policy-sec" id="policy-refund">
+        <summary>환불 규정<svg class="policy-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="policy-body">
+<h4>1. 경기 참가비</h4>
+<table>
+<tr><td>매치 3일 전</td><td>참가비 전액 (100%)</td></tr>
+<tr><td>매치 2일 전</td><td>참가비의 50% 환불</td></tr>
+<tr><td>매치 1일 전</td><td>참가비의 20% 환불</td></tr>
+<tr><td>당일 · 무단 불참</td><td>환불 불가 + 페널티</td></tr>
+</table>
+<p>※ 최소 인원 미달·우천 등으로 경기가 취소될 경우: 매치 시작 1시간 30분 전까지 취소 시 참가비 전액 환급</p>
+<h4>2. 플레이패스 · LTU 멤버스 회비</h4>
+<p>결제 후 7일 이내이고 혜택(할인·무료 참가)을 한 번도 사용하지 않았다면 전액 환불합니다. 혜택을 사용했거나 7일이 지난 경우에는 환불되지 않습니다. 단, 클럽 사정으로 서비스를 제공하지 못하는 경우 남은 기간만큼 일할 계산하여 환불합니다.</p>
+<h4>3. 상점 상품</h4>
+<p>공식 굿즈는 받은 날부터 7일 이내 교환·반품할 수 있습니다. 단순 변심은 왕복 배송비를 구매자가 부담하고, 상품 불량·오배송은 막차유나이티드가 부담합니다. 이름·번호 각인 등 주문 제작 상품은 제작 시작 후 교환·반품이 제한됩니다. 회원 중고마켓 거래는 회원 간 직거래로, 막차유나이티드는 거래에 개입하지 않습니다.</p>
+<h4>4. 환불 방법 및 기간</h4>
+<p>카드 결제는 결제 취소로 처리되며 카드사에 따라 3~7영업일이 걸립니다. 계좌이체·카카오페이 입금은 프로필에 등록한 환불 계좌로 3영업일 이내에 돌려드립니다.</p>
+<p>환불 문의: 010-4329-5658 · shesilver11@naver.com</p>
+<p class="policy-date">시행일: 2026년 10월 13일</p>
+        </div>
+    </details>
+    </div>
+
+    <footer>© 2026 LAST TRAIN UNITED. 운영사 막차유나이티드. All rights reserved.</footer>
+</main>
+
+<div class="modal-overlay" id="applyModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>⚽ 일회성 참여 신청</h3>
+            <button class="modal-close" onclick="closeApplyModal()">✕</button>
+        </div>
+        <div class="modal-match-info" id="modalMatchInfo"></div>
+        
+        <div class="form-group">
+            <label>이름 <span class="req">*</span></label>
+            <input type="text" id="guestName" placeholder="홍길동" maxlength="10">
+        </div>
+        <div class="form-group">
+            <label>연락처 <span class="req">*</span></label>
+            <input type="tel" id="guestPhone" placeholder="010-1234-5678" maxlength="13">
+        </div>
+        <div class="form-group">
+            <label>성별 <span class="req">*</span></label>
+            <div class="gender-row">
+                <button class="gender-btn" type="button" onclick="selectGender('남', this)">🙋 남</button>
+                <button class="gender-btn" type="button" onclick="selectGender('여', this)">🙋‍♀️ 여</button>
+            </div>
+        </div>
+        
+        <!-- ✨ 나이 (필수) -->
+        <div class="form-group">
+            <label>나이 <span class="req">*</span></label>
+            <input type="number" id="guestAge" placeholder="30" min="10" max="80">
+        </div>
+        
+        <!-- ✨ 실력 (필수) -->
+        <div class="form-group">
+            <label>실력 <span class="req">*</span></label>
+            <select id="guestSkill" class="skill-select">
+                <option value="">선택해주세요</option>
+                <option value="비기너">🌱 비기너</option>
+                <option value="아마추어 1">⚽ 아마추어 1</option>
+                <option value="아마추어 2">⚽ 아마추어 2</option>
+                <option value="아마추어 3">⚽ 아마추어 3</option>
+                <option value="세미프로 1">🔥 세미프로 1</option>
+                <option value="세미프로 2">🔥 세미프로 2</option>
+                <option value="프로">🏆 프로</option>
+            </select>
+            
+            <!-- 실력 가이드 -->
+            <div class="skill-guide">
+                <div class="skill-guide-title">💡 실력 등급 가이드</div>
+                <div class="skill-guide-list">
+                    <div><b>🌱 비기너</b> : 규칙 숙지, 가끔 경기 참여 경험</div>
+                    <div><b>⚽ 아마추어 1</b> : 패스 가능, 슛 가능</div>
+                    <div><b>⚽ 아마추어 2</b> : 패스, 슛, 연계플레이 가능</div>
+                    <div><b>⚽ 아마추어 3</b> : 연계플레이 상급</div>
+                    <div><b>🔥 세미프로 1</b> : 기본기 탄탄 + 경기 운영 능력</div>
+                    <div><b>🔥 세미프로 2</b> : 학창시절 선수 경험</div>
+                    <div><b>🏆 프로</b> : 선출 (엘리트 출신)</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>한 줄 메모 <span style="color:rgba(255,255,255,0.4); font-weight:600;">(선택)</span></label>
+            <textarea id="guestMemo" placeholder="예: 친구 소개로 한 번 와봅니다!"></textarea>
+        </div>
+        
+        <button class="submit-btn" id="submitBtn" onclick="submitApplication()">⚽ 신청하기</button>
+
+        <div class="guest-payment-wrap" id="guestPaymentWrap">
+            <div class="guest-paid-card">
+                <div class="guest-paid-row">
+                    <div class="guest-paid-icon">⏱</div>
+                    <div class="guest-paid-text">
+                        <div class="main">비회원 참여 신청 완료</div>
+                        <div class="sub">입금 확인 후 최종 참여가 확정됩니다</div>
+                    </div>
+                    <div class="guest-paid-badge">입금 대기</div>
+                </div>
+            </div>
+
+            <a href="https://qr.kakaopay.com/Ej8ttzZl2138805656" target="_blank" class="guest-kakao-btn">
+                <span>💳</span> 카카오페이로 입금하기
+            </a>
+
+            <div class="guest-bank-info">
+                <div class="guest-bank-row">
+                    <span class="guest-bank-label">🏦 계좌 이체</span>
+                    <span class="guest-bank-account" onclick="window.copyGuestAccount('1002-749-651441')">
+                        1002-749-651441 <span class="guest-copy-hint">📋 복사</span>
+                    </span>
+                </div>
+                <div class="guest-bank-row">
+                    <span class="guest-bank-label">은행 / 예금주</span>
+                    <span style="font-weight:700;">우리은행 · <b>박시은(매니저)</b></span>
+                </div>
+            </div>
+
+            <div class="guest-payment-notice">
+                ⚠️ <b id="guestFeeNotice">10,000원</b> 입금 후 아래 버튼을 눌러주세요.
+            </div>
+
+            <button class="guest-paid-btn" id="guestPaidBtn" onclick="window.markGuestAsPaid()">
+                💸 입금했어요 (관리자 확인 대기)
+            </button>
+        </div>
+
+        
+        <div class="info-notice">
+            💡 신청 후 아래 카카오페이 또는 계좌이체로 입금해주세요.<br>
+            입금 확인 후 최종 참여가 확정됩니다!
+        </div>
+        <div class="refund-mini"><div class="refund-mini-title">환불 규정</div><div class="refund-mini-grid"><div>3일 전<b>100%</b></div><div>2일 전<b>50%</b></div><div>1일 전<b>20%</b></div><div class="no">당일·노쇼<b>불가</b></div></div><div class="refund-mini-foot"><span>우천·인원 미달 취소 시 전액 환급</span><a onclick="window.showPolicy('refund')">자세히 보기</a></div></div>
+    </div>
+</div>
+
+
+<div class="modal-overlay" id="lookupModal">
+    <div class="modal-card lookup-modal-card">
+        <div class="modal-header">
+            <h3>👀 내 신청 확인하기</h3>
+            <button class="modal-close" onclick="window.closeLookupModal()">✕</button>
+        </div>
+        <p class="lookup-help">신청할 때 입력한 연락처로 비회원 신청 내역을 조회합니다. 최근 다가오는 경기 신청을 우선으로 보여드려요.</p>
+
+        <div class="form-group">
+            <label>연락처</label>
+            <input type="tel" id="lookupPhone" placeholder="010-1234-5678" maxlength="13">
+        </div>
+        <button class="lookup-btn btn-pink-unified" id="lookupBtn" onclick="window.lookupGuestByPhone()">🔍 신청 내역 조회</button>
+
+        <div class="status-box" id="lookupStatusBox"></div>
+    </div>
+</div>
+
+
+<div class="modal-overlay" id="slideAdminModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 id="slideAdminTitle">🖼️ 슬라이드 이미지 관리</h3>
+            <button class="modal-close" onclick="window.closeSlideAdmin()">✕</button>
+        </div>
+        <p class="lookup-help" id="slideAdminHelp">이미지를 추가/삭제/순서변경하면 링크를 여는 모든 사람에게 즉시 반영됩니다.</p>
+        <div id="slideAdminList" class="slide-admin-list"></div>
+        <label class="slide-add-btn" for="slideAddInput">➕ 이미지 추가 (여러 장 가능)</label>
+        <input type="file" id="slideAddInput" accept="image/*" multiple style="display:none">
+        <button class="btn-unified btn-dark-unified" type="button" id="slideResetBtn" onclick="window.resetSlidesToDefault()" style="margin-top:8px;">기본 이미지로 되돌리기</button>
+        <button class="btn-unified btn-dark-unified" type="button" id="slideCommonBtn" onclick="window.openSlideAdmin(null)" style="margin-top:8px; display:none;">⚙️ 공통 기본 이미지 편집</button>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ✨ 로그인 팝업 (바텀시트) -->
+<style>
+    .ltu-popup-overlay { position:fixed; inset:0; z-index:99999; display:none; }
+    .ltu-popup-overlay.show { display:block; }
+    .ltu-popup-backdrop { position:absolute; inset:0; background:rgba(0,0,0,.62); opacity:0; transition:opacity .3s ease; }
+    .ltu-popup-overlay.show .ltu-popup-backdrop { opacity:1; }
+    .ltu-popup-sheet { position:absolute; left:0; right:0; bottom:0; max-width:520px; margin:0 auto;
+        background:#0b1630; border-radius:24px 24px 0 0; padding:10px 18px calc(16px + env(safe-area-inset-bottom));
+        transform:translateY(100%); transition:transform .38s cubic-bezier(.34,1.4,.5,1);
+        box-shadow:0 -20px 60px rgba(0,0,0,.5); border-top:1px solid rgba(255,46,99,.4); max-height:88vh; overflow-y:auto; }
+    .ltu-popup-overlay.show .ltu-popup-sheet { transform:translateY(0); }
+    .ltu-popup-grab { width:42px; height:5px; border-radius:99px; background:rgba(255,255,255,.25); margin:8px auto 14px; }
+    .ltu-popup-img { width:100%; border-radius:16px; display:block; margin-bottom:14px; object-fit:contain; max-height:30vh; background:rgba(255,255,255,.04); cursor:pointer; }
+    .ltu-popup-title { color:#fff; font-size:20px; font-weight:900; margin:0 0 8px; letter-spacing:-.5px; line-height:1.3; }
+    .ltu-popup-text { color:rgba(255,255,255,.72); font-size:14px; line-height:1.6; margin:0 0 16px; white-space:pre-wrap; }
+    .ltu-popup-cta { display:block; width:100%; box-sizing:border-box; background:linear-gradient(135deg,#ff2e63,#e91e63);
+        color:#fff; border:none; border-radius:14px; padding:15px; font-size:15px; font-weight:900; cursor:pointer;
+        font-family:inherit; text-align:center; text-decoration:none; }
+    .ltu-popup-cta:active { transform:scale(.99); }
+    .ltu-popup-foot { display:flex; align-items:center; justify-content:space-between; margin-top:12px; }
+    .ltu-popup-hide { display:flex; align-items:center; gap:7px; color:rgba(255,255,255,.6); font-size:13px; cursor:pointer; user-select:none; }
+    .ltu-popup-hide input { width:17px; height:17px; accent-color:#ff2e63; }
+    .ltu-popup-close { background:none; border:none; color:rgba(255,255,255,.6); font-size:13px; font-weight:800; cursor:pointer; font-family:inherit; padding:6px 4px; }
+</style>
+<div class="ltu-popup-overlay" id="ltuPopup">
+    <div class="ltu-popup-backdrop" onclick="closeLtuPopup()"></div>
+    <div class="ltu-popup-sheet">
+        <div class="ltu-popup-grab"></div>
+        <img id="ltuPopupImg" class="ltu-popup-img" style="display:none;" alt="" onclick="ltuPopupGo()">
+        <h3 id="ltuPopupTitle" class="ltu-popup-title" style="display:none;"></h3>
+        <p id="ltuPopupText" class="ltu-popup-text" style="display:none;"></p>
+        <a id="ltuPopupCta" class="ltu-popup-cta" style="display:none;" onclick="ltuPopupGo(); return false;"></a>
+        <div class="ltu-popup-foot">
+            <label class="ltu-popup-hide"><input type="checkbox" id="ltuPopupHideChk"> 오늘 하루 보지 않기</label>
+            <button class="ltu-popup-close" onclick="closeLtuPopup()">닫기 ✕</button>
+        </div>
+    </div>
+</div>
+<script>
+    // 📜 정책 칸 열고 그 위치로 이동 (신청 창이 열려 있으면 닫고 이동)
+    window.showPolicy = function (key) {
+        var el = document.getElementById('policy-' + key);
+        if (!el) return;
+        var modal = document.getElementById('applyModal');
+        if (modal && modal.classList.contains('show') && typeof window.closeApplyModal === 'function') window.closeApplyModal();
+        if (el.tagName === 'DETAILS') el.open = true;
+        // 위쪽 경기 목록이 늦게 불러와져 위치가 밀리는 경우 대비: 잠시 뒤 다시 맞춤 (회원이 직접 스크롤하면 중단)
+        var userMoved = false;
+        var stop = function () { userMoved = true; };
+        ['wheel', 'touchstart', 'keydown'].forEach(function (ev) { window.addEventListener(ev, stop, { once: true, passive: true }); });
+        [60, 700, 1600].forEach(function (ms) { setTimeout(function () { if (!userMoved) el.scrollIntoView({ block: 'start' }); }, ms); });
+    };
+    window.addEventListener('load', function () {
+        var m = (location.hash || '').match(/^#policy-(info|terms|privacy|refund)$/);
+        if (m) window.showPolicy(m[1]);
+    });
+
+    // ✨ 로그인 팝업(바텀시트) 공통 로직
+    var ltuPopupCfg = null, ltuPopupShown = false;
+    function ltuTodayStr() { var d = new Date(); return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate(); }
+    function showLtuPopup(p) {
+        if (!p || !p.enabled || ltuPopupShown) return;
+        var sig = (p.updatedAt || 0) + '|' + ltuTodayStr();
+        if (localStorage.getItem('ltu_popup_seen') === sig) return;
+        // 여러 개 등록 시 랜덤 1개 선택 (없으면 기존 단일 팝업 호환)
+        var item = p;
+        if (Array.isArray(p.items) && p.items.length) {
+            item = p.items[Math.floor(Math.random() * p.items.length)];
+        }
+        if (!item || (!item.title && !item.text && !item.imageUrl)) return;
+        ltuPopupCfg = { imageUrl: item.imageUrl, title: item.title, text: item.text, linkUrl: item.linkUrl, linkLabel: item.linkLabel, updatedAt: p.updatedAt || 0 };
+        p = item;
+        var imgEl = document.getElementById('ltuPopupImg');
+        if (p.imageUrl) { imgEl.src = p.imageUrl; imgEl.style.display = 'block'; } else { imgEl.style.display = 'none'; }
+        var titleEl = document.getElementById('ltuPopupTitle');
+        titleEl.textContent = p.title || ''; titleEl.style.display = p.title ? 'block' : 'none';
+        var textEl = document.getElementById('ltuPopupText');
+        textEl.textContent = p.text || ''; textEl.style.display = p.text ? 'block' : 'none';
+        var cta = document.getElementById('ltuPopupCta');
+        if (p.linkUrl) { cta.textContent = p.linkLabel || '자세히 보기'; cta.href = p.linkUrl; cta.style.display = 'block'; }
+        else cta.style.display = 'none';
+        document.getElementById('ltuPopupHideChk').checked = false;
+        document.getElementById('ltuPopup').classList.add('show');
+        ltuPopupShown = true;
+    }
+    function ltuPopupPersistHide() {
+        if (document.getElementById('ltuPopupHideChk').checked && ltuPopupCfg) {
+            localStorage.setItem('ltu_popup_seen', (ltuPopupCfg.updatedAt || 0) + '|' + ltuTodayStr());
+        }
+    }
+    window.closeLtuPopup = function () {
+        ltuPopupPersistHide();
+        document.getElementById('ltuPopup').classList.remove('show');
+    };
+    window.ltuPopupGo = function () {
+        ltuPopupPersistHide();
+        if (ltuPopupCfg && ltuPopupCfg.linkUrl) location.href = ltuPopupCfg.linkUrl;
+        else document.getElementById('ltuPopup').classList.remove('show');
+    };
+</script>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, push, get, update, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAo6x8MqKqEJVstH9ZjDa6tyrOPHEo6CfM",
+        authDomain: "makcha-united-final.firebaseapp.com",
+        databaseURL: "https://makcha-united-final-default-rtdb.firebaseio.com",
+        projectId: "makcha-united-final",
+        storageBucket: "makcha-united-final.firebasestorage.app",
+        messagingSenderId: "631914143856",
+        appId: "1:631914143856:web:5d96e048da9a19a90954b5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const storage = getStorage(app);
+    const userKey = localStorage.getItem('userKey');
+
+    // ✨ 로그인 팝업(바텀시트) 노출 - 관리자 설정(soccer_club/popup) 구독
+    onValue(ref(db, 'soccer_club/popup'), (snap) => {
+        if (typeof showLtuPopup === 'function') showLtuPopup(snap.val());
+    });
+
+    // 🔒 관리자 비밀번호 (원하는 값으로 변경하세요)
+    const LANDING_ADMIN_PW = '0226';
+
+    function updateMemberCta() {
+        const cta = document.getElementById('memberCta');
+        if (cta && userKey) {
+            cta.href = "mypage.html";
+            cta.innerHTML = "🚂 마이페이지로 이동하기 ❯";
+        }
+    }
+    updateMemberCta();
+
+    let allStadiums = {};
+    let selectedMatchId = null;
+    let selectedGender = null;
+    let currentGuestKey = null;
+
+    const GUEST_STORAGE_KEY = 'makchayu_guest_application_v1';
+
+    // 기본 슬라이드 (관리자가 따로 등록한 이미지가 없을 때 사용)
+    const DEFAULT_SLIDES = [
+        'ltu_slide_1.png',
+        'ltu_slide_2.png',
+        'ltu_slide_3.png',
+        'ltu_slide_4.png'
+    ];
+    let slideImages = [...DEFAULT_SLIDES];
+    let _slideCounts = new Set();   // 이번 렌더에 사용된 슬라이드 장수(경기별로 다를 수 있음)
+    const SLIDE_SECONDS = 5; // 한 장당 노출 시간(초)
+
+    // 슬라이드 개수별 애니메이션 타이밍 생성 (경기마다 이미지 수가 달라도 각각 맞게 적용)
+    // data-n="N" 슬라이더에만 해당 N용 키프레임/duration이 걸리도록 스코프를 나눔
+    function buildSlideTimings(counts) {
+        let css = '';
+        counts.forEach(cnt => {
+            const n = cnt < 1 ? 1 : cnt;
+            const total = n * SLIDE_SECONDS;
+            const slot = 100 / n; // 한 슬라이드가 차지하는 비율(%)
+            const p1 = (slot * 0.12).toFixed(2);
+            const p2 = (slot * 0.80).toFixed(2);
+            const p3 = (slot * 0.95).toFixed(2);
+            css += `
+            .match-slider[data-n="${n}"] .match-slide { animation-name: ltuFZ_${n}; animation-duration: ${total}s; }
+            .match-slider[data-n="${n}"] .slider-dots span { animation-name: ltuDot_${n}; animation-duration: ${total}s; }
+            @keyframes ltuFZ_${n} {
+                0% { opacity: 0; transform: scale(1.08); }
+                ${p1}% { opacity: 1; transform: scale(1.05); }
+                ${p2}% { opacity: 1; transform: scale(1.01); }
+                ${p3}% { opacity: 0; transform: scale(1); }
+                100% { opacity: 0; transform: scale(1.08); }
+            }
+            @keyframes ltuDot_${n} {
+                0% { background: var(--pink); transform: scale(1.55); box-shadow: 0 0 10px rgba(255,46,99,.72); }
+                ${(slot * 0.9).toFixed(2)}% { background: var(--pink); transform: scale(1.55); box-shadow: 0 0 10px rgba(255,46,99,.72); }
+                ${slot.toFixed(2)}%, 100% { background: rgba(255,255,255,.55); transform: scale(1); box-shadow: none; }
+            }
+        `;
+        });
+        let tag = document.getElementById('ltu-slider-anim');
+        if (!tag) { tag = document.createElement('style'); tag.id = 'ltu-slider-anim'; document.head.appendChild(tag); }
+        tag.textContent = css;
+    }
+
+    // 경기별 이미지가 있으면 그걸, 없으면 공통(slideImages) 사용
+    function getMatchImages(s) {
+        const own = (s && Array.isArray(s.slides)) ? s.slides.filter(Boolean) : [];
+        return own.length ? own : slideImages;
+    }
+
+    function renderMatchSlider(s) {
+        const imgs = getMatchImages(s);
+        const n = imgs.length || 1;
+        _slideCounts.add(n);
+        const isCustom = !!(s && Array.isArray(s.slides) && s.slides.filter(Boolean).length);
+        const slides = imgs.map((src, i) =>
+            `<div class="match-slide" style="animation-delay:${i * SLIDE_SECONDS}s"><img src="${src}" alt="막차유 경기 이미지" loading="lazy"></div>`
+        ).join('');
+        const dots = imgs.map((_, i) =>
+            `<span style="animation-delay:${i * SLIDE_SECONDS}s"></span>`
+        ).join('');
+        return `
+            <div class="match-slider" data-n="${n}" aria-label="막차유 경기 이미지 슬라이드">
+                <div class="match-slider-track">${slides}</div>
+                <div class="slider-badge">🚂 LAST TRAIN UNITED${isCustom ? ' · 전용' : ''}</div>
+                <button type="button" class="slider-admin-btn" onclick="window.openSlideAdmin('${s.id}')" aria-label="이미지 관리" title="이 경기 이미지 관리">⚙️</button>
+                <div class="slider-dots">${dots}</div>
+            </div>
+        `;
+    }
+
+    function normalizePhone(phone) {
+        return String(phone || '').replace(/[^0-9]/g, '');
+    }
+
+    function safeParseDate(str) {
+        if (!str) return new Date();
+        const parts = String(str).match(/(\d+)-(\d+)-(\d+)\s+(\d+):(\d+)/);
+        if (parts) return new Date(parts[1], parts[2] - 1, parts[3], parts[4], parts[5]);
+        return new Date(String(str).replace(' ', 'T'));
+    }
+
+    function getCapacityInfo(s) {
+        const text = (s.capacityText || (Array.isArray(s.sizes) ? s.sizes.join(', ') : '') || '').trim();
+        const legacyMax = Number(s.max || 0);
+        let max = legacyMax > 0 ? legacyMax : null;
+
+        if (!max && text) {
+            const teamNums = text.match(/\d+(?=\s*(?:vs|$))/gi);
+            if (teamNums && /vs/i.test(text)) {
+                max = teamNums.reduce((sum, n) => sum + Number(n), 0);
+            } else {
+                const rangeMatch = text.match(/(\d+)\s*[~-]\s*(\d+)/);
+                if (rangeMatch) {
+                    max = Number(rangeMatch[2]);
+                } else {
+                    const maxMatch = text.match(/최대\s*(\d+)/);
+                    if (maxMatch) {
+                        max = Number(maxMatch[1]);
+                    } else {
+                        const peopleMatch = text.match(/^(\d+)\s*명?$/);
+                        if (peopleMatch) max = Number(peopleMatch[1]);
+                    }
+                }
+            }
+        }
+
+        return {
+            text: text || (max ? `최대 ${max}명` : '인원미정'),
+            max: max || null
+        };
+    }
+
+    function formatPhoneInputValue(value) {
+        let v = String(value || '').replace(/[^0-9]/g, '');
+        if (v.length > 3 && v.length <= 7) v = v.slice(0,3) + '-' + v.slice(3);
+        else if (v.length > 7) v = v.slice(0,3) + '-' + v.slice(3,7) + '-' + v.slice(7,11);
+        return v;
+    }
+
+    function saveGuestLocal(matchId, guestKey, phone) {
+        localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify({
+            matchId,
+            guestKey,
+            phone: normalizePhone(phone),
+            savedAt: Date.now()
+        }));
+        refreshRestoreCard();
+    }
+
+    function getGuestLocal() {
+        try { return JSON.parse(localStorage.getItem(GUEST_STORAGE_KEY) || 'null'); }
+        catch { return null; }
+    }
+
+    function getGuestStatusText(guest) {
+        const pay = guest?.paymentStatus || 'pending';
+        const status = guest?.status || 'pending';
+        if (status === 'approved' || pay === 'confirmed') return { cls: 'confirmed', text: '🎉 참여 확정' };
+        if (pay === 'requested') return { cls: 'requested', text: '⏳ 입금 확인 요청' };
+        if (status === 'rejected') return { cls: 'rejected', text: '🚫 신청 반려' };
+        return { cls: 'pending', text: '💸 입금 대기' };
+    }
+
+    function getStatusLink(matchId, guestKey) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('match', matchId);
+        url.searchParams.set('guest', guestKey);
+        return url.toString();
+    }
+
+    function renderGuestStatusHTML(matchId, guestKey, match, guest) {
+        const d = new Date(match.date);
+        const dateText = `${d.getMonth() + 1}월 ${d.getDate()}일 (${['일','월','화','수','목','금','토'][d.getDay()]}) ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+        const status = getGuestStatusText(guest);
+        const link = getStatusLink(matchId, guestKey);
+        const canPaid = (guest.paymentStatus || 'pending') === 'pending';
+        const fee = Number(guest.amount) || Number(match.guestFee) || 10000;
+        const payInfoHTML = canPaid ? `
+            <div class="guest-payment-wrap show" style="margin-top:14px;">
+                <a href="https://qr.kakaopay.com/Ej8ttzZl2138805656" target="_blank" class="guest-kakao-btn">
+                    <span>💳</span> 카카오페이로 입금하기
+                </a>
+                <div class="guest-bank-info">
+                    <div class="guest-bank-row">
+                        <span class="guest-bank-label">🏦 계좌 이체</span>
+                        <span class="guest-bank-account" onclick="window.copyGuestAccount('1002-749-651441')">
+                            1002-749-651441 <span class="guest-copy-hint">📋 복사</span>
+                        </span>
+                    </div>
+                    <div class="guest-bank-row">
+                        <span class="guest-bank-label">은행 / 예금주</span>
+                        <span style="font-weight:700;">우리은행 · <b>박시은(매니저)</b></span>
+                    </div>
+                </div>
+                <div class="guest-payment-notice">
+                    ⚠️ <b>${fee.toLocaleString()}원</b> 입금 후 아래 버튼을 눌러주세요.
+                </div>
+                <div class="refund-mini light"><div class="refund-mini-title">환불 규정</div><div class="refund-mini-grid"><div>3일 전<b>100%</b></div><div>2일 전<b>50%</b></div><div>1일 전<b>20%</b></div><div class="no">당일·노쇼<b>불가</b></div></div><div class="refund-mini-foot"><span>우천·인원 미달 취소 시 전액 환급</span><a onclick="window.showPolicy('refund')">자세히 보기</a></div></div>
+            </div>
+        ` : '';
+        return `
+            <div class="status-line"><span>신청자</span><b>${guest.name || '-'}</b></div>
+            <div class="status-line"><span>경기</span><b>${match.name || '경기장'}</b></div>
+            <div class="status-line"><span>일정</span><b>${dateText}</b></div>
+            <div class="status-line"><span>연락처</span><b>${guest.phone || '-'}</b></div>
+            <div class="status-line"><span>현재 상태</span><b><span class="status-badge ${status.cls}">${status.text}</span></b></div>
+            ${payInfoHTML}
+            <div class="status-actions">
+                ${canPaid ? `<button class="status-action-btn btn-pink-unified" onclick="window.markGuestAsPaidFromStatus('${matchId}','${guestKey}')">💸 입금했어요</button>` : ''}
+                <button class="status-action-btn btn-dark-unified" onclick="window.openApplyModal('${matchId}')">경기 정보 다시 보기</button>
+            </div>
+            <div class="status-link-box">
+                <b>내 신청 확인 링크</b><br>${link}
+                <button class="share-link-btn btn-unified" onclick="window.copyStatusLink('${encodeURIComponent(link)}')">🔗 링크 복사하기</button>
+            </div>
+        `;
+    }
+
+    function refreshRestoreCard() {
+        const card = document.getElementById('restoreCard');
+        if (!card) return;
+        const saved = getGuestLocal();
+        card.classList.toggle('show', !!(saved && saved.matchId && saved.guestKey));
+    }
+
+    onValue(ref(db, 'soccer_club/stadiums'), (snap) => {
+        allStadiums = snap.val() || {};
+        renderMatches();
+        refreshRestoreCard();
+        openStatusFromUrlOnce();
+    });
+
+    // ✅ 관리자가 등록한 슬라이드 이미지를 모든 사용자에게 동기화
+    onValue(ref(db, 'soccer_club/landing/slides'), (snap) => {
+        const v = snap.val();
+        slideImages = (Array.isArray(v) && v.length) ? v.filter(Boolean) : [...DEFAULT_SLIDES];
+        renderMatches();
+        if (document.getElementById('slideAdminModal')?.classList.contains('show')) renderSlideAdminList();
+    });
+
+    // ── 월간 경기 일정 캘린더 (mypage에서 이식) ─────────────────
+    let monthCalendarDate = new Date();
+    monthCalendarDate.setDate(1);
+
+    function getYMD(date) {
+        return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    }
+
+    function getMatchesByDate(stadiums) {
+        const matchByDate = {};
+        Object.entries(stadiums || {}).forEach(([id, s]) => {
+            if (!s.date) return;
+            const d = safeParseDate(s.date);
+            d.setHours(0,0,0,0);
+            const ymd = getYMD(d);
+            (matchByDate[ymd] = matchByDate[ymd] || []).push({ id, ...s });
+        });
+        Object.values(matchByDate).forEach(list => {
+            list.sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
+        });
+        return matchByDate;
+    }
+
+    function renderMonthCalendar(stadiums) {
+        const grid = document.getElementById('monthCalendarGrid');
+        const title = document.getElementById('monthCalendarTitle');
+        const msg = document.getElementById('monthCalendarMsg');
+        if (!grid || !title || !msg) return;
+
+        const y = monthCalendarDate.getFullYear();
+        const m = monthCalendarDate.getMonth();
+        const first = new Date(y, m, 1);
+        const start = new Date(first);
+        start.setDate(first.getDate() - first.getDay());
+        const todayYMD = getYMD(new Date());
+        const matchByDate = getMatchesByDate(stadiums);
+        const monthMatches = Object.entries(matchByDate)
+            .filter(([ymd]) => { const d = safeParseDate(ymd); return d.getFullYear() === y && d.getMonth() === m; })
+            .reduce((sum, [, list]) => sum + list.length, 0);
+
+        title.innerText = `${y}년 ${m + 1}월 경기 일정`;
+        msg.innerText = monthMatches > 0
+            ? `${m + 1}월 등록 경기 ${monthMatches}개 · 날짜를 누르면 신청 창이 열립니다.`
+            : `${m + 1}월에 등록된 경기가 없습니다.`;
+
+        const weekNames = ['일','월','화','수','목','금','토'];
+        let html = weekNames.map(w => `<div class="month-weekday">${w}</div>`).join('');
+        for (let i = 0; i < 42; i++) {
+            const d = new Date(start);
+            d.setDate(start.getDate() + i);
+            const ymd = getYMD(d);
+            const matches = matchByDate[ymd] || [];
+            const isCurrentMonth = d.getMonth() === m;
+            const isToday = ymd === todayYMD;
+            const hasMatch = matches.length > 0;
+            const label = hasMatch ? `${matches.length}경기` : '';
+            const onclick = hasMatch ? ` onclick="window.selectMonthCalendarDate('${ymd}')"` : '';
+            const cls = `month-day${isCurrentMonth ? '' : ' other'}${isToday ? ' today' : ''}${hasMatch ? ' has-match' : ''}`;
+            html += `
+                <button type="button" class="${cls}"${onclick}>
+                    <div class="month-day-num">${d.getDate()}</div>
+                    ${hasMatch ? `<div class="month-match-pill">${label}</div>` : ''}
+                </button>
+            `;
+        }
+        grid.innerHTML = html;
+    }
+
+    window.monthCalendarPrev = () => {
+        monthCalendarDate.setMonth(monthCalendarDate.getMonth() - 1);
+        renderMonthCalendar(allStadiums);
+    };
+    window.monthCalendarNext = () => {
+        monthCalendarDate.setMonth(monthCalendarDate.getMonth() + 1);
+        renderMonthCalendar(allStadiums);
+    };
+    // 날짜 클릭 → 그 날 다가오는 경기의 신청 창 열기 (종료된 경기만 있으면 안내)
+    window.selectMonthCalendarDate = (ymd) => {
+        const matches = (getMatchesByDate(allStadiums)[ymd] || []);
+        if (!matches.length) return;
+        const now = new Date();
+        const upcomingThatDay = matches.find(mm => safeParseDate(mm.date) > now);
+        if (upcomingThatDay) window.openApplyModal(upcomingThatDay.id);
+        else showToast('🏁 해당 날짜의 경기는 종료되었습니다.');
+    };
+
+    const MAX_MATCH_CARDS = 3; // 랜딩에는 가까운 경기 N개만 카드로 노출
+
+    function renderMatches() {
+        const list = document.getElementById('matchList');
+        const moreNote = document.getElementById('matchMoreNote');
+        const now = new Date();
+        _slideCounts = new Set();
+
+        renderMonthCalendar(allStadiums);
+
+        const upcoming = Object.entries(allStadiums)
+            .map(([id, s]) => ({ id, ...s }))
+            .filter(s => new Date(s.date) > now)
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        if (upcoming.length === 0) {
+            list.innerHTML = `
+                <div class="match-empty">
+                    📭 아직 등록된 경기가 없습니다<br>
+                    <span style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:6px; display:inline-block;">곧 새로운 경기가 올라옵니다!</span>
+                </div>
+            `;
+            if (moreNote) moreNote.innerHTML = '';
+            return;
+        }
+
+        const shown = upcoming.slice(0, MAX_MATCH_CARDS);
+        if (moreNote) {
+            const rest = upcoming.length - shown.length;
+            moreNote.innerHTML = rest > 0
+                ? `<div class="match-more-note">🗓️ 이 외 <b>${rest}개</b> 경기가 더 있어요 · <b>위 캘린더</b>에서 전체 일정을 확인하세요</div>`
+                : '';
+        }
+
+        list.innerHTML = shown.map(s => {
+            const d = new Date(s.date);
+            const dateText = `${d.getMonth() + 1}월 ${d.getDate()}일 (${['일','월','화','수','목','금','토'][d.getDay()]}) ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+            
+            const pNames = s.participants ? Object.values(s.participants) : [];
+            const guestList = s.guests ? Object.values(s.guests).filter(g => g && g.status !== 'rejected') : [];
+            const totalCount = pNames.length + guestList.length;
+            const capacityInfo = getCapacityInfo(s);
+            const maxPpl = capacityInfo.max;
+            const fillRate = maxPpl ? Math.min(100, Math.round((totalCount / maxPpl) * 100)) : null;
+            const isFull = maxPpl ? totalCount >= maxPpl : false;
+            const recruitClosed = !!s.recruitClosed;
+            const participantText = maxPpl ? `${totalCount}/${maxPpl}명` : `${totalCount}명`;
+            const matchTypeText = s.activityType || s.type || '매칭';
+            const guestFee = Number(s.guestFee) || 10000;
+
+            return `
+                <div class="match-card">
+                    ${renderMatchSlider(s)}
+                    <div class="match-card-body">
+                        <div class="match-date">📅 ${dateText}</div>
+                        <div class="match-name">${s.name || '경기장'}</div>
+                        <div class="match-address">📍 ${s.address || '주소 미정'}</div>
+                        <div class="match-info">
+                            <span>🥇 <b>${guestFee.toLocaleString()}원</b></span>
+                            <span>⚽ <b>${matchTypeText}</b></span>
+                            <span>👥 <b>${participantText}</b> <span class="fill">${fillRate === null ? '' : `(${fillRate}%)`}</span></span>
+                            <span>📌 <b>${capacityInfo.text}</b></span>
+                        </div>
+                        <button class="match-apply-btn" onclick="openApplyModal('${s.id}')" ${(isFull || recruitClosed) ? 'disabled' : ''}>
+                            ${recruitClosed ? '🔒 모집이 마감되었습니다' : (isFull ? '🚫 정원이 마감되었습니다' : '⚽ 일회성 참여 신청')}
+                        </button>
+                        <a href="mypage.html" class="member-page-link">기존 회원은 마이페이지 ❯</a>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        buildSlideTimings(_slideCounts);
+    }
+
+    window.openApplyModal = (matchId) => {
+        const s = allStadiums[matchId];
+        if (!s) return;
+        
+        selectedMatchId = matchId;
+        selectedGender = null;
+        currentGuestKey = null;
+        
+        document.getElementById('guestName').value = '';
+        document.getElementById('guestPhone').value = '';
+        document.getElementById('guestAge').value = '';
+        document.getElementById('guestSkill').value = '';
+        document.getElementById('guestMemo').value = '';
+        document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
+        const payWrap = document.getElementById('guestPaymentWrap');
+        if (payWrap) payWrap.classList.remove('show');
+        const paidBtn = document.getElementById('guestPaidBtn');
+        if (paidBtn) { paidBtn.disabled = false; paidBtn.innerText = '💸 입금했어요 (관리자 확인 대기)'; }
+        
+        const d = new Date(s.date);
+        const dateText = `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 (${['일','월','화','수','목','금','토'][d.getDay()]}) ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+        
+        document.getElementById('modalMatchInfo').innerHTML = `
+            <div class="name">${s.name || '경기장'}</div>
+            <div class="date">📅 ${dateText}</div>
+            <div class="price-info">📍 ${s.address || '주소 미정'} · 💰 ${(Number(s.guestFee) || 10000).toLocaleString()}원</div>
+        `;
+
+        const feeNotice = document.getElementById('guestFeeNotice');
+        if (feeNotice) feeNotice.innerText = `${(Number(s.guestFee) || 10000).toLocaleString()}원`;
+
+        document.getElementById('applyModal').classList.add('show');
+    };
+
+    window.closeApplyModal = () => {
+        document.getElementById('applyModal').classList.remove('show');
+        selectedMatchId = null;
+    };
+
+    window.selectGender = (gender, btn) => {
+        selectedGender = gender;
+        document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    };
+
+    document.getElementById('guestPhone').addEventListener('input', (e) => {
+        e.target.value = formatPhoneInputValue(e.target.value);
+    });
+    document.getElementById('lookupPhone')?.addEventListener('input', (e) => {
+        e.target.value = formatPhoneInputValue(e.target.value);
+    });
+
+    window.submitApplication = async () => {
+        const name = document.getElementById('guestName').value.trim();
+        const phone = document.getElementById('guestPhone').value.trim();
+        const age = document.getElementById('guestAge').value.trim();
+        const skill = document.getElementById('guestSkill').value;
+        const memo = document.getElementById('guestMemo').value.trim();
+
+        if (!name) { alert("이름을 입력해주세요."); return; }
+        if (!phone || phone.length < 12) { alert("연락처를 정확히 입력해주세요."); return; }
+        if (!selectedGender) { alert("성별을 선택해주세요."); return; }
+        if (!age || age < 10 || age > 80) { alert("나이를 정확히 입력해주세요. (10~80세)"); return; }
+        if (!skill) { alert("실력을 선택해주세요."); return; }
+        if (!selectedMatchId) { alert("매칭 정보를 다시 확인해주세요."); return; }
+
+        const normalizedPhone = phone.replace(/[^0-9]/g, '');
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = '⏳ 신청 확인 중...';
+
+        try {
+            const matchSnap = await get(ref(db, `soccer_club/stadiums/${selectedMatchId}`));
+            if (!matchSnap.exists()) {
+                alert("해당 경기 정보를 찾을 수 없습니다.");
+                return;
+            }
+
+            const match = matchSnap.val();
+            const alreadyAppliedEntry = Object.entries(match.guests || {}).find(([key, g]) => {
+                const savedPhone = normalizePhone(g.phone || '');
+                return savedPhone === normalizedPhone;
+            });
+
+            if (alreadyAppliedEntry) {
+                const [guestKey, guestData] = alreadyAppliedEntry;
+                currentGuestKey = guestKey;
+                saveGuestLocal(selectedMatchId, guestKey, guestData.phone || phone);
+                showToast(`👀 이미 신청된 내역을 찾았습니다!\n신청 상태를 확인해주세요.`);
+                showGuestStatusInLookup(selectedMatchId, guestKey, match, guestData, true);
+                return;
+            }
+
+            const members = match.participants ? Object.values(match.participants) : [];
+            const guests = match.guests ? Object.values(match.guests).filter(g => g && g.status !== 'rejected') : [];
+            const totalCount = members.length + guests.length;
+            const capacityInfo = getCapacityInfo(match);
+            const maxPpl = capacityInfo.max;
+
+            if (match.recruitClosed) {
+                alert("아쉽지만 해당 경기는 모집이 마감되어 신청할 수 없습니다.");
+                return;
+            }
+            if (maxPpl && totalCount >= maxPpl) {
+                alert("아쉽지만 해당 매칭은 정원이 마감되었습니다.");
+                return;
+            }
+
+            btn.innerText = '⏳ 신청 중...';
+
+            const guestRef = await push(ref(db, `soccer_club/stadiums/${selectedMatchId}/guests`), {
+                name: name,
+                phone: phone,
+                gender: selectedGender,
+                age: parseInt(age),
+                skill: skill,
+                memo: memo || '',
+                appliedAt: Date.now(),
+                status: 'pending',
+                paymentStatus: 'pending',
+                amount: Number(match.guestFee) || 10000
+            });
+
+            currentGuestKey = guestRef.key;
+            saveGuestLocal(selectedMatchId, currentGuestKey, phone);
+            history.replaceState(null, '', `?match=${encodeURIComponent(selectedMatchId)}&guest=${encodeURIComponent(currentGuestKey)}`);
+
+            // ✨ 카카오 알림톡 자동 발송 (경기 신청 접수 안내) - 비회원 신청 즉시
+            try {
+                const md = new Date(match.date);
+                const matchDateText = `${md.getMonth() + 1}월 ${md.getDate()}일 (${['일','월','화','수','목','금','토'][md.getDay()]}) ${md.getHours()}:${String(md.getMinutes()).padStart(2,'0')}`;
+                const alimRes = await fetch('https://ltu.dothome.co.kr/api/sendAlimtalk.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'match_apply',
+                        to: normalizedPhone,
+                        variables: {
+                            '이름': name,
+                            '경기명': match.name || '경기',
+                            '일정': matchDateText,
+                            '장소': match.address || '장소 미정'
+                        }
+                    })
+                });
+                const alimData = await alimRes.json();
+                if (alimData.ok) {
+                    await update(ref(db, `soccer_club/stadiums/${selectedMatchId}/guests/${currentGuestKey}`), {
+                        applyAlimtalkSentAt: Date.now()
+                    });
+                    console.log('✅ 신청 접수 알림톡 발송 성공:', alimData);
+                } else {
+                    console.warn('⚠️ 신청 접수 알림톡 발송 실패:', alimData.error);
+                }
+            } catch (alimErr) {
+                console.warn('⚠️ 신청 접수 알림톡 요청 오류:', alimErr);
+            }
+
+            const payWrap = document.getElementById('guestPaymentWrap');
+            if (payWrap) {
+                payWrap.classList.add('show');
+                payWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            showToast(`✅ 신청이 접수되었습니다!\n카카오페이 또는 계좌이체로 ${(Number(match.guestFee) || 10000).toLocaleString()}원 입금 후\n입금했어요 버튼을 눌러주세요.`);
+        } catch (e) {
+            console.error("신청 실패:", e);
+            alert("신청 중 오류가 발생했습니다: " + e.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = '⚽ 신청하기';
+        }
+    };
+
+    window.markGuestAsPaid = async () => {
+        if (!selectedMatchId || !currentGuestKey) {
+            alert("신청 정보를 찾을 수 없습니다. 다시 신청을 진행해주세요.");
+            return;
+        }
+        if (!confirm("입금을 완료하셨나요?\n\n관리자가 확인 후 최종 승인됩니다.")) return;
+
+        const btn = document.getElementById('guestPaidBtn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = '⏳ 입금 신고 중...';
+        }
+
+        try {
+            await update(ref(db, `soccer_club/stadiums/${selectedMatchId}/guests/${currentGuestKey}`), {
+                paymentStatus: 'requested',
+                paymentRequestedAt: Date.now()
+            });
+            if (btn) btn.innerText = '✅ 입금 신고 완료';
+            showToast("✅ 입금 신고가 완료되었습니다!\n관리자 확인 후 참여가 확정됩니다.");
+        } catch (e) {
+            console.error("비회원 입금 신고 실패:", e);
+            alert("입금 신고 중 오류가 발생했습니다: " + e.message);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = '💸 입금했어요 (관리자 확인 대기)';
+            }
+        }
+    };
+
+
+    async function showGuestStatusInLookup(matchId, guestKey, match = null, guest = null, openModal = false) {
+        try {
+            if (!match || !guest) {
+                const snap = await get(ref(db, `soccer_club/stadiums/${matchId}`));
+                if (!snap.exists()) throw new Error('경기 정보를 찾을 수 없습니다.');
+                match = snap.val();
+                guest = match.guests?.[guestKey];
+            }
+            if (!guest) throw new Error('신청 정보를 찾을 수 없습니다.');
+            selectedMatchId = matchId;
+            currentGuestKey = guestKey;
+            saveGuestLocal(matchId, guestKey, guest.phone || '');
+            const box = document.getElementById('lookupStatusBox');
+            box.innerHTML = renderGuestStatusHTML(matchId, guestKey, match, guest);
+            box.classList.add('show');
+            if (openModal) document.getElementById('lookupModal').classList.add('show');
+        } catch (e) {
+            alert(e.message || '신청 내역을 찾지 못했습니다.');
+        }
+    }
+
+    window.openLookupModal = () => {
+        document.getElementById('lookupStatusBox').classList.remove('show');
+        document.getElementById('lookupStatusBox').innerHTML = '';
+        const saved = getGuestLocal();
+        if (saved?.phone) document.getElementById('lookupPhone').value = formatPhoneInputValue(saved.phone);
+        document.getElementById('lookupModal').classList.add('show');
+    };
+
+    window.closeLookupModal = () => {
+        document.getElementById('lookupModal').classList.remove('show');
+    };
+
+    window.restoreRecentGuest = async () => {
+        const saved = getGuestLocal();
+        if (!saved?.matchId || !saved?.guestKey) {
+            window.openLookupModal();
+            return;
+        }
+        await showGuestStatusInLookup(saved.matchId, saved.guestKey, null, null, true);
+    };
+
+    window.lookupGuestByPhone = async () => {
+        const phone = normalizePhone(document.getElementById('lookupPhone').value);
+        if (!phone || phone.length < 10) {
+            alert('연락처를 정확히 입력해주세요.');
+            return;
+        }
+        const btn = document.getElementById('lookupBtn');
+        btn.disabled = true;
+        btn.innerText = '⏳ 조회 중...';
+        try {
+            const applications = [];
+
+            Object.entries(allStadiums)
+                .map(([id, s]) => ({ id, ...s }))
+                .filter(s => s.guests)
+                .forEach(match => {
+                    Object.entries(match.guests || {}).forEach(([guestKey, guest]) => {
+                        if (normalizePhone(guest.phone) === phone) {
+                            applications.push({
+                                matchId: match.id,
+                                guestKey,
+                                match,
+                                guest,
+                                matchDate: safeParseDate(match.date),
+                                appliedAt: guest.appliedAt || 0
+                            });
+                        }
+                    });
+                });
+
+            if (applications.length > 0) {
+                applications.sort((a, b) => {
+                    const appliedDiff = b.appliedAt - a.appliedAt;
+                    if (appliedDiff !== 0) return appliedDiff;
+                    return b.matchDate - a.matchDate;
+                });
+
+                const latest = applications[0];
+                await showGuestStatusInLookup(
+                    latest.matchId,
+                    latest.guestKey,
+                    latest.match,
+                    latest.guest,
+                    false
+                );
+                showToast('✅ 신청 내역을 찾았습니다.');
+                return;
+            }
+            document.getElementById('lookupStatusBox').innerHTML = `
+                <div style="text-align:center; padding:18px 6px; color:rgba(255,255,255,.72); font-size:13px; line-height:1.6;">
+                    📭 해당 연락처로 신청된 내역을 찾지 못했습니다.<br>연락처를 다시 확인하거나 새로 신청해주세요.
+                </div>
+            `;
+            document.getElementById('lookupStatusBox').classList.add('show');
+        } catch (e) {
+            alert('조회 중 오류가 발생했습니다: ' + e.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = '🔍 신청 내역 조회';
+        }
+    };
+
+    window.markGuestAsPaidFromStatus = async (matchId, guestKey) => {
+        selectedMatchId = matchId;
+        currentGuestKey = guestKey;
+        await window.markGuestAsPaid();
+        const snap = await get(ref(db, `soccer_club/stadiums/${matchId}`));
+        if (snap.exists()) {
+            const match = snap.val();
+            const guest = match.guests?.[guestKey];
+            if (guest) await showGuestStatusInLookup(matchId, guestKey, match, guest, false);
+        }
+    };
+
+    window.copyStatusLink = (encodedLink) => {
+        const link = decodeURIComponent(encodedLink);
+        const textarea = document.createElement('textarea');
+        textarea.value = link;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        textarea.setSelectionRange(0, 99999);
+        try {
+            document.execCommand('copy');
+            showToast('🔗 신청 확인 링크를 복사했어요!');
+        } catch (e) {
+            alert(`복사 실패. 아래 링크를 직접 복사해주세요:\n${link}`);
+        } finally {
+            document.body.removeChild(textarea);
+        }
+    };
+
+    let statusUrlOpened = false;
+    async function openStatusFromUrlOnce() {
+        if (statusUrlOpened || !Object.keys(allStadiums).length) return;
+        const params = new URLSearchParams(location.search);
+        const matchId = params.get('match');
+        const guestKey = params.get('guest');
+        if (!matchId || !guestKey) return;
+        statusUrlOpened = true;
+        await showGuestStatusInLookup(matchId, guestKey, null, null, true);
+    }
+
+    window.copyGuestAccount = (account) => {
+        const textarea = document.createElement('textarea');
+        textarea.value = account;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        textarea.setSelectionRange(0, 99999);
+        try {
+            document.execCommand('copy');
+            showToast(`📋 계좌번호 복사 완료!\n${account}`);
+        } catch (e) {
+            alert(`복사 실패. 직접 입력해주세요:\n${account}`);
+        } finally {
+            document.body.removeChild(textarea);
+        }
+    };
+
+    // ===== 🖼️ 관리자 슬라이드 이미지 관리 =====
+    let slideAdminAuthed = false;
+
+    // 현재 편집 중인 대상: null = 공통 기본, 문자열 = 해당 경기 id
+    let slideAdminMatchId = null;
+    let slideEditList = [];   // 모달에서 편집 중인 이미지 URL 작업본
+
+    window.openSlideAdmin = (matchId) => {
+        if (!slideAdminAuthed) {
+            const pw = prompt('🔒 관리자 비밀번호를 입력하세요.');
+            if (pw === null) return;
+            if (pw !== LANDING_ADMIN_PW) { alert('비밀번호가 올바르지 않습니다.'); return; }
+            slideAdminAuthed = true;
+        }
+        slideAdminMatchId = matchId || null;
+        if (slideAdminMatchId) {
+            const m = allStadiums[slideAdminMatchId] || {};
+            const own = Array.isArray(m.slides) ? m.slides.filter(Boolean) : [];
+            // 전용 이미지 없으면 공통을 "복제"해서 보여줌 → 여기서 지우거나 추가하면 이 경기 전용이 됨
+            slideEditList = own.length ? own : [...slideImages];
+        } else {
+            slideEditList = [...slideImages];
+        }
+        renderSlideAdminList();
+        document.getElementById('slideAdminModal').classList.add('show');
+    };
+
+    window.closeSlideAdmin = () => {
+        document.getElementById('slideAdminModal').classList.remove('show');
+    };
+
+    function renderSlideAdminList() {
+        const box = document.getElementById('slideAdminList');
+        if (!box) return;
+        const isMatch = !!slideAdminMatchId;
+        const m = isMatch ? (allStadiums[slideAdminMatchId] || {}) : null;
+
+        // 제목 / 설명 / 버튼 라벨을 대상에 맞게 갱신
+        const titleEl = document.getElementById('slideAdminTitle');
+        const helpEl = document.getElementById('slideAdminHelp');
+        const resetBtn = document.getElementById('slideResetBtn');
+        const commonBtn = document.getElementById('slideCommonBtn');
+        // 이 경기가 아직 전용 이미지가 없고 공통을 쓰는 중인지
+        const usingCommon = isMatch && !(Array.isArray(m.slides) && m.slides.filter(Boolean).length);
+        if (titleEl) titleEl.textContent = isMatch ? `🖼️ "${m.name || '경기'}" 이미지` : '🖼️ 공통 기본 이미지 관리';
+        if (helpEl) helpEl.textContent = isMatch
+            ? (usingCommon
+                ? '지금은 공통 이미지예요. 여기서 삭제·추가하면 이 경기 전용으로 저장됩니다.'
+                : '이 경기 전용 이미지입니다. 전부 비우면 공통으로 돌아갑니다.')
+            : '경기별 이미지가 없는 모든 카드에 공통으로 표시됩니다. 즉시 반영됩니다.';
+        if (resetBtn) resetBtn.textContent = isMatch ? '🔄 공통 이미지로 되돌리기 (전용 삭제)' : '기본 이미지로 되돌리기';
+        if (commonBtn) commonBtn.style.display = isMatch ? 'block' : 'none';
+
+        // 공통 편집 모드에서 이미지를 모두 지운 경우 → 기본 이미지(ltu_slide)가 랜딩에 표시됨
+        if (!isMatch && slideEditList.length === 0) {
+            box.innerHTML = `<div class="lookup-help" style="padding:8px 4px 12px; font-size:12px;">🖼️ 공통 이미지가 없어 <b>기본 이미지(ltu_slide)</b>가 랜딩에 표시됩니다.<br>아래 ➕로 이미지를 추가하면 공통 이미지가 설정됩니다.</div>`
+                + DEFAULT_SLIDES.map((src) => `
+                <div class="slide-admin-item">
+                    <span class="idx">기본</span>
+                    <img src="${src}" alt="">
+                </div>`).join('');
+            return;
+        }
+
+        const commonNote = usingCommon
+            ? `<div class="lookup-help" style="padding:8px 4px 12px; font-size:12px;">⬇️ 아래는 <b>공통 이미지</b>입니다. 삭제·추가하면 <b>이 경기만</b> 바뀝니다. (공통 자체를 바꾸려면 맨 아래 <b>공통 기본 이미지 편집</b>)</div>`
+            : '';
+        box.innerHTML = commonNote + slideEditList.map((src, i) => `
+            <div class="slide-admin-item">
+                <span class="idx">${i + 1}</span>
+                <img src="${src}" alt="">
+                <div class="slide-admin-actions">
+                    <button type="button" onclick="window.moveSlide(${i}, -1)" ${i === 0 ? 'disabled' : ''}>↑</button>
+                    <button type="button" onclick="window.moveSlide(${i}, 1)" ${i === slideEditList.length - 1 ? 'disabled' : ''}>↓</button>
+                    <button type="button" onclick="window.deleteSlide(${i})">🗑</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // 편집 작업본(arr)을 대상(경기 or 공통)에 저장
+    async function applySlides(arr) {
+        slideEditList = arr;
+        if (slideAdminMatchId) {
+            // 경기 전용: 비어있으면 노드 삭제(null) → 공통으로 자동 복귀
+            if (allStadiums[slideAdminMatchId]) allStadiums[slideAdminMatchId].slides = arr.length ? arr : null; // 즉시 반영
+            try {
+                await set(ref(db, `soccer_club/stadiums/${slideAdminMatchId}/slides`), arr.length ? arr : null);
+            } catch (e) { alert('저장 실패: ' + e.message); }
+        } else {
+            slideImages = arr.length ? arr : [...DEFAULT_SLIDES];
+            try {
+                await set(ref(db, 'soccer_club/landing/slides'), arr);
+            } catch (e) { alert('저장 실패: ' + e.message); }
+        }
+        renderMatches();
+        renderSlideAdminList();
+    }
+
+    window.moveSlide = (i, dir) => {
+        const arr = [...slideEditList];
+        const j = i + dir;
+        if (j < 0 || j >= arr.length) return;
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+        applySlides(arr);
+    };
+
+    window.deleteSlide = (i) => {
+        // 공통을 전부 지우면 기본 이미지(ltu_slide)로 자동 복귀, 경기 전용을 전부 지우면 공통으로 복귀
+        const isLastCommon = !slideAdminMatchId && slideEditList.length <= 1;
+        const msg = isLastCommon
+            ? '마지막 공통 이미지입니다. 삭제하면 기본 이미지(ltu_slide)가 표시됩니다. 삭제할까요?'
+            : '이 이미지를 삭제할까요?';
+        if (!confirm(msg)) return;
+        applySlides(slideEditList.filter((_, idx) => idx !== i));
+    };
+
+    window.resetSlidesToDefault = () => {
+        if (slideAdminMatchId) {
+            if (!confirm('이 경기의 전용 이미지를 삭제하고 공통 이미지로 되돌릴까요?')) return;
+            applySlides([]);
+        } else {
+            if (!confirm('기본 이미지로 되돌릴까요?')) return;
+            applySlides([...DEFAULT_SLIDES]);
+        }
+    };
+
+    document.getElementById('slideAddInput')?.addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files || []);
+        if (!files.length) return;
+        const label = document.querySelector('.slide-add-btn');
+        const oldText = label ? label.innerHTML : '';
+        if (label) label.innerHTML = '⏳ 업로드 중...';
+        try {
+            const urls = [];
+            const folder = slideAdminMatchId ? `match_slides/${slideAdminMatchId}` : 'landing_slides';
+            for (const f of files) {
+                const safeName = f.name.replace(/[^\w.\-]/g, '_');
+                const path = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}_${safeName}`;
+                const r = sRef(storage, path);
+                await uploadBytes(r, f);
+                urls.push(await getDownloadURL(r));
+            }
+            await applySlides([...slideEditList, ...urls]);
+            showToast('✅ 이미지가 추가되었습니다!');
+        } catch (err) {
+            console.error('이미지 업로드 실패:', err);
+            alert('업로드 실패: ' + err.message + '\n\nFirebase Storage 보안 규칙(읽기/쓰기 허용)을 확인해주세요.');
+        } finally {
+            if (label) label.innerHTML = oldText;
+            e.target.value = '';
+        }
+    });
+
+    document.getElementById('slideAdminModal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'slideAdminModal') window.closeSlideAdmin();
+    });
+
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.innerText = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    document.getElementById('applyModal').addEventListener('click', (e) => {
+        if (e.target.id === 'applyModal') closeApplyModal();
+    });
+    document.getElementById('lookupModal').addEventListener('click', (e) => {
+        if (e.target.id === 'lookupModal') closeLookupModal();
+    });
+    refreshRestoreCard();
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('service-worker.js').catch(() => {});
+        });
+    }
+</script>
+</body>
+</html>
